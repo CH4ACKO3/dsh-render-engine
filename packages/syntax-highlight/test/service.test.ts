@@ -3,8 +3,13 @@ import test from 'node:test'
 import type { ShikiService } from '@ch4acko3/dsh-shiki/client'
 import { SyntaxHighlighter } from '../src/client/service.js'
 
-function sourceOf(lines: Array<Array<{ content: string }>>): string {
-  return lines.map(line => line.map(token => token.content).join('')).join('\n')
+function sourceOf(
+  lines: Array<Array<{ content: string }>>,
+  lineEndings: string[],
+): string {
+  return lines
+    .map((line, index) => line.map(token => token.content).join('') + (lineEndings[index] ?? ''))
+    .join('')
 }
 
 test('converts Shiki tokens into stable highlight tokens', () => {
@@ -17,6 +22,7 @@ test('converts Shiki tokens into stable highlight tokens', () => {
         { content: code.slice(0, 5), color: 'var(--shiki-token-keyword)', fontStyle: 2 },
         { content: code.slice(5), color: 'var(--shiki-foreground)' },
       ]],
+      lineEndings: [],
     }),
   }
   const highlighter = new SyntaxHighlighter(shiki)
@@ -25,7 +31,7 @@ test('converts Shiki tokens into stable highlight tokens', () => {
 
   assert.equal(result.language, 'typescript')
   assert.equal(result.highlighted, true)
-  assert.equal(sourceOf(result.lines), code)
+  assert.equal(sourceOf(result.lines, result.lineEndings), code)
   assert.ok(result.lines.flat().some(token => token.color.startsWith('var(--shiki-')))
   assert.equal(result.lines[0]?.[0]?.style?.bold, true)
 })
@@ -42,6 +48,28 @@ test('returns plain tokens when the language is absent or unsupported', () => {
 
   assert.equal(result.language, null)
   assert.equal(result.highlighted, false)
-  assert.equal(sourceOf(result.lines), code)
+  assert.equal(sourceOf(result.lines, result.lineEndings), code)
   assert.ok(result.lines.flat().every(token => token.color === 'var(--shiki-foreground)'))
+})
+
+test('preserves CRLF line endings in highlighted tokens', () => {
+  const shiki: ShikiService = {
+    languages: ['typescript'],
+    resolveLanguage: () => 'typescript',
+    tokenize: () => ({
+      language: 'typescript',
+      lines: [
+        [{ content: 'const x = 1', color: 'var(--shiki-foreground)' }],
+        [{ content: 'const y = 2', color: 'var(--shiki-foreground)' }],
+        [{ content: '', color: 'var(--shiki-foreground)' }],
+      ],
+      lineEndings: ['\r\n', '\r\n'],
+    }),
+  }
+  const highlighter = new SyntaxHighlighter(shiki)
+  const code = 'const x = 1\r\nconst y = 2\r\n'
+  const result = highlighter.highlight({ code, language: 'ts' })
+
+  assert.deepEqual(result.lineEndings, ['\r\n', '\r\n'])
+  assert.equal(sourceOf(result.lines, result.lineEndings), code)
 })

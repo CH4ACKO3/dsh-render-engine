@@ -1,7 +1,7 @@
 import { createCssVariablesTheme, createHighlighterCoreSync } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import type { HighlighterCore } from 'shiki/core'
-import type { ShikiService, ShikiTokenizeRequest, ShikiTokenizeResult } from './contract.js'
+import type { ShikiService, ShikiTokenizeRequest, ShikiTokenizeResult, SourceLineEnding } from './contract.js'
 import { bundledLanguages, resolveLanguage, supportedLanguages } from './languages.js'
 
 export const DSH_SHIKI_THEME = 'dsh-css-variables'
@@ -11,6 +11,10 @@ const theme = createCssVariablesTheme({
   variablePrefix: '--shiki-',
   fontStyle: true,
 })
+
+function lineEndingsOf(code: string): SourceLineEnding[] {
+  return code.match(/\r\n|\r|\n/g) as SourceLineEnding[] | null ?? []
+}
 
 export class ShikiEngine implements ShikiService {
   readonly languages = supportedLanguages
@@ -36,6 +40,7 @@ export class ShikiEngine implements ShikiService {
         color: token.color,
         fontStyle: token.fontStyle,
       }))),
+      lineEndings: lineEndingsOf(code),
     }
   }
 

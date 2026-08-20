@@ -14,4 +14,4 @@ export function apply(ctx) {
 }
 ```
 
-`resolveLanguage()` accepts common aliases. `tokenize()` requires a supported language and returns Shiki tokens using DSH's `--shiki-*` CSS variables.
+`resolveLanguage()` accepts common aliases. `tokenize()` requires a supported language and returns Shiki tokens using DSH's `--shiki-*` CSS variables. Its `lineEndings` field preserves the source's original LF, CRLF, or CR separators.

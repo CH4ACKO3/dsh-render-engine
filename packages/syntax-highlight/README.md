@@ -14,4 +14,4 @@ export function apply(ctx) {
 }
 ```
 
-Unknown or absent language hints return plain tokens instead of throwing.
+Unknown or absent language hints return plain tokens instead of throwing. The result's `lineEndings` field preserves the source's original LF, CRLF, or CR separators.

@@ -24,6 +24,7 @@ dsh-shiki <- dsh-syntax-highlight <- dsh-code-render
 
 - 多个 DSH Web 插件共享一个延迟初始化的 Shiki 引擎。
 - 提供不依赖 Shiki 内部 token 结构的稳定数据模型。
+- 在每一层服务中保留原始 LF、CRLF 和 CR 换行符。
 - 使用 CSS 变量输出颜色，跟随 DSH 主题。
 - 语言未提供或不受支持时自动回退为纯文本。
 - 生成 HTML 时转义源码内容。

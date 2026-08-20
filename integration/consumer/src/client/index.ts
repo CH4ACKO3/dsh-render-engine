@@ -17,12 +17,17 @@ interface IntegrationResult {
 export const name = '@ch4acko3/dsh-render-engine-integration'
 export const inject = ['shiki', 'syntaxHighlighter', 'codeRenderer'] as const
 
-function sourceOf(lines: Array<Array<{ content: string }>>): string {
-  return lines.map(line => line.map(token => token.content).join('')).join('\n')
+function sourceOf(
+  lines: Array<Array<{ content: string }>>,
+  lineEndings: string[],
+): string {
+  return lines
+    .map((line, index) => line.map(token => token.content).join('') + (lineEndings[index] ?? ''))
+    .join('')
 }
 
 export function apply(ctx: ClientContext): void {
-  const source = 'const answer: number = 42'
+  const source = 'const answer: number = 42\r\nconst ready = true\r\n'
   const raw = ctx.shiki.tokenize({ code: source, language: 'ts' })
   const highlighted = ctx.syntaxHighlighter.highlight({ code: source, language: 'ts' })
   const fallback = ctx.syntaxHighlighter.highlight({ code: '<unsafe>', language: 'cobol' })
@@ -31,9 +36,9 @@ export function apply(ctx: ClientContext): void {
   const result: IntegrationResult = {
     passed: false,
     language: highlighted.language ?? '',
-    tokenizedSource: sourceOf(raw.lines),
-    highlightedSource: sourceOf(highlighted.lines),
-    fallbackIsPlain: !fallback.highlighted && sourceOf(fallback.lines) === '<unsafe>',
+    tokenizedSource: sourceOf(raw.lines, raw.lineEndings),
+    highlightedSource: sourceOf(highlighted.lines, highlighted.lineEndings),
+    fallbackIsPlain: !fallback.highlighted && sourceOf(fallback.lines, fallback.lineEndings) === '<unsafe>',
     escapedHtml: rendered.html.includes('&lt;script&gt;') && !rendered.html.includes('<script>'),
     themedHtml: rendered.html.includes('var(--shiki-background)') && rendered.html.includes('var(--shiki-foreground)'),
   }

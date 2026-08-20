@@ -16,10 +16,13 @@ export interface HighlightToken {
   style?: HighlightTokenStyle
 }
 
+export type SourceLineEnding = '\n' | '\r\n' | '\r'
+
 export interface SyntaxHighlightResult {
   language: string | null
   highlighted: boolean
   lines: HighlightToken[][]
+  lineEndings: SourceLineEnding[]
 }
 
 export interface SyntaxHighlighterService {

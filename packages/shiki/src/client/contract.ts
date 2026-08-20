@@ -9,9 +9,12 @@ export interface ShikiToken {
   fontStyle?: number | undefined
 }
 
+export type SourceLineEnding = '\n' | '\r\n' | '\r'
+
 export interface ShikiTokenizeResult {
   language: string
   lines: ShikiToken[][]
+  lineEndings: SourceLineEnding[]
 }
 
 export interface ShikiService {

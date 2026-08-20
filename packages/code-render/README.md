@@ -14,4 +14,4 @@ export function apply(ctx) {
 }
 ```
 
-Source text and HTML attributes are escaped. Colors follow DSH's `--shiki-*` CSS variables.
+Source text and HTML attributes are escaped. Colors follow DSH's `--shiki-*` CSS variables, and original LF, CRLF, or CR line endings are retained.

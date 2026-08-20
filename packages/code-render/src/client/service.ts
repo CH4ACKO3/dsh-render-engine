@@ -1,5 +1,6 @@
 import type {
   HighlightToken,
+  SourceLineEnding,
   SyntaxHighlighterService,
   SyntaxHighlightRequest,
 } from '@ch4acko3/dsh-syntax-highlight/client'
@@ -26,13 +27,13 @@ function tokenCss(token: HighlightToken): string {
   return declarations.join(';')
 }
 
-function renderLines(lines: HighlightToken[][]): string {
-  return lines.map((line) => {
+function renderLines(lines: HighlightToken[][], lineEndings: SourceLineEnding[]): string {
+  return lines.map((line, index) => {
     const tokens = line
       .map(token => `<span style="${escapeHtml(tokenCss(token))}">${escapeHtml(token.content)}</span>`)
       .join('')
-    return `<span class="line">${tokens}</span>`
-  }).join('\n')
+    return `<span class="line">${tokens}</span>${lineEndings[index] ?? ''}`
+  }).join('')
 }
 
 export class HtmlCodeRenderer implements CodeRendererService {
@@ -45,7 +46,7 @@ export class HtmlCodeRenderer implements CodeRendererService {
   render(request: SyntaxHighlightRequest): CodeRenderResult {
     const result = this.syntaxHighlighter.highlight(request)
     return {
-      html: `<pre class="shiki dsh-code-render" style="background-color:var(--shiki-background);color:var(--shiki-foreground)" tabindex="0"><code>${renderLines(result.lines)}</code></pre>`,
+      html: `<pre class="shiki dsh-code-render" style="background-color:var(--shiki-background);color:var(--shiki-foreground)" tabindex="0"><code>${renderLines(result.lines, result.lineEndings)}</code></pre>`,
       language: result.language,
       highlighted: result.highlighted,
     }

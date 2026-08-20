@@ -2,6 +2,7 @@ import type { ShikiService } from '@ch4acko3/dsh-shiki/client'
 import type {
   HighlightToken,
   HighlightTokenStyle,
+  SourceLineEnding,
   SyntaxHighlighterService,
   SyntaxHighlightRequest,
   SyntaxHighlightResult,
@@ -19,8 +20,12 @@ function tokenStyle(fontStyle: number | undefined): HighlightTokenStyle | undefi
   return style
 }
 
+function lineEndingsOf(code: string): SourceLineEnding[] {
+  return code.match(/\r\n|\r|\n/g) as SourceLineEnding[] | null ?? []
+}
+
 function plainLines(code: string): HighlightToken[][] {
-  return code.split('\n').map(content => [{ content, color: FOREGROUND }])
+  return code.split(/\r\n|\r|\n/).map(content => [{ content, color: FOREGROUND }])
 }
 
 export class SyntaxHighlighter implements SyntaxHighlighterService {
@@ -33,7 +38,12 @@ export class SyntaxHighlighter implements SyntaxHighlighterService {
   highlight({ code, language: hint }: SyntaxHighlightRequest): SyntaxHighlightResult {
     const language = this.shiki.resolveLanguage(hint)
     if (language === null) {
-      return { language: null, highlighted: false, lines: plainLines(code) }
+      return {
+        language: null,
+        highlighted: false,
+        lines: plainLines(code),
+        lineEndings: lineEndingsOf(code),
+      }
     }
 
     const result = this.shiki.tokenize({ code, language })
@@ -48,6 +58,7 @@ export class SyntaxHighlighter implements SyntaxHighlighterService {
           ...(style === undefined ? {} : { style }),
         }
       })),
+      lineEndings: result.lineEndings,
     }
   }
 }

@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-20T21:43:04Z",
+  "title": "Design System: DSH Render Engine Local Preview",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Instrument Indigo",
+        "canonical": "oklch(53.1% 0.1958 271.0)",
+        "tonalRamp": ["oklch(15% 0.1958 271.0)", "oklch(27% 0.1958 271.0)", "oklch(39% 0.1958 271.0)", "oklch(51% 0.1958 271.0)", "oklch(63% 0.1958 271.0)", "oklch(75% 0.1958 271.0)", "oklch(87% 0.1958 271.0)", "oklch(95% 0.1958 271.0)"]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Washed Indigo",
+        "canonical": "oklch(95.8% 0.0202 279.9)",
+        "tonalRamp": ["oklch(15% 0.0202 279.9)", "oklch(27% 0.0202 279.9)", "oklch(39% 0.0202 279.9)", "oklch(51% 0.0202 279.9)", "oklch(63% 0.0202 279.9)", "oklch(75% 0.0202 279.9)", "oklch(87% 0.0202 279.9)", "oklch(95% 0.0202 279.9)"]
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Service Green",
+        "canonical": "oklch(61.2% 0.1393 152.5)",
+        "tonalRamp": ["oklch(15% 0.1393 152.5)", "oklch(27% 0.1393 152.5)", "oklch(39% 0.1393 152.5)", "oklch(51% 0.1393 152.5)", "oklch(63% 0.1393 152.5)", "oklch(75% 0.1393 152.5)", "oklch(87% 0.1393 152.5)", "oklch(95% 0.1393 152.5)"]
+      },
+      "success-text": {
+        "role": "tertiary",
+        "displayName": "Deep Service Green",
+        "canonical": "oklch(45.6% 0.0956 153.5)",
+        "tonalRamp": ["oklch(15% 0.0956 153.5)", "oklch(27% 0.0956 153.5)", "oklch(39% 0.0956 153.5)", "oklch(51% 0.0956 153.5)", "oklch(63% 0.0956 153.5)", "oklch(75% 0.0956 153.5)", "oklch(87% 0.0956 153.5)", "oklch(95% 0.0956 153.5)"]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(17.7% 0.0089 264.3)",
+        "tonalRamp": ["oklch(15% 0.0089 264.3)", "oklch(27% 0.0089 264.3)", "oklch(39% 0.0089 264.3)", "oklch(51% 0.0089 264.3)", "oklch(63% 0.0089 264.3)", "oklch(75% 0.0089 264.3)", "oklch(87% 0.0089 264.3)", "oklch(95% 0.0089 264.3)"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Slate",
+        "canonical": "oklch(54.3% 0.0225 260.1)",
+        "tonalRamp": ["oklch(15% 0.0225 260.1)", "oklch(27% 0.0225 260.1)", "oklch(39% 0.0225 260.1)", "oklch(51% 0.0225 260.1)", "oklch(63% 0.0225 260.1)", "oklch(75% 0.0225 260.1)", "oklch(87% 0.0225 260.1)", "oklch(95% 0.0225 260.1)"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Cool Hairline",
+        "canonical": "oklch(90.4% 0.0042 271.4)",
+        "tonalRamp": ["oklch(15% 0.0042 271.4)", "oklch(27% 0.0042 271.4)", "oklch(39% 0.0042 271.4)", "oklch(51% 0.0042 271.4)", "oklch(63% 0.0042 271.4)", "oklch(75% 0.0042 271.4)", "oklch(87% 0.0042 271.4)", "oklch(95% 0.0042 271.4)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White Surface",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": ["oklch(15% 0 0)", "oklch(27% 0 0)", "oklch(39% 0 0)", "oklch(51% 0 0)", "oklch(63% 0 0)", "oklch(75% 0 0)", "oklch(87% 0 0)", "oklch(95% 0 0)"]
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Lifted Mist",
+        "canonical": "oklch(97.9% 0.0029 264.5)",
+        "tonalRamp": ["oklch(15% 0.0029 264.5)", "oklch(27% 0.0029 264.5)", "oklch(39% 0.0029 264.5)", "oklch(51% 0.0029 264.5)", "oklch(63% 0.0029 264.5)", "oklch(75% 0.0029 264.5)", "oklch(87% 0.0029 264.5)", "oklch(95% 0.0029 264.5)"]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Tool Title", "purpose": "Names the local preview in its header." },
+      "body": { "displayName": "Interface Body", "purpose": "Inherited baseline for the compact overlay." },
+      "control": { "displayName": "Control Text", "purpose": "Tabs and compact interactive controls." },
+      "code": { "displayName": "Code and Data", "purpose": "Editable source, highlighted code, structured tokens, and escaped HTML." },
+      "label": { "displayName": "Metadata Label", "purpose": "Field labels, pipeline metadata, subtitle, and status." }
+    },
+    "shadows": [
+      { "name": "overlay-ambient", "value": "0 18px 48px rgb(15 23 42 / 18%)", "purpose": "Separates the expanded fixed overlay from the DSH host." },
+      { "name": "launcher-ambient", "value": "0 8px 24px rgb(70 91 219 / 28%)", "purpose": "Keeps the collapsed launcher discoverable." }
+    ],
+    "breakpoints": [
+      { "name": "viewport-overlay", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Overlay Shell",
+      "kind": "custom",
+      "refersTo": "overlay-shell",
+      "description": "The private fixed integration surface that contains the complete debugging workflow.",
+      "html": "<aside class=\"ds-overlay-shell\"><header>代码渲染实验台</header><main>Local integration preview</main></aside>",
+      "css": ".ds-overlay-shell { display: grid; grid-template-rows: auto 1fr; width: min(460px, calc(100vw - 32px)); min-height: 300px; overflow: hidden; color: #0f1115; background: #fff; border: 1px solid #dedfe2; border-radius: 14px; box-shadow: 0 18px 48px rgb(15 23 42 / 18%); font: 13px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", sans-serif; } .ds-overlay-shell header { padding: 16px; border-bottom: 1px solid #dedfe2; font-size: 14px; font-weight: 650; } .ds-overlay-shell main { padding: 16px; background: #f7f8fa; }"
+    },
+    {
+      "name": "Collapse Control",
+      "kind": "button",
+      "refersTo": "icon-button",
+      "description": "A compact chevron button that collapses the overlay while preserving host access.",
+      "html": "<button class=\"ds-icon-button\" type=\"button\" aria-label=\"收起预览\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m8 10 4 4 4-4\"/></svg></button>",
+      "css": ".ds-icon-button { display: grid; width: 32px; height: 32px; place-items: center; color: #0f1115; background: transparent; border: 0; border-radius: 9px; cursor: pointer; } .ds-icon-button:hover { background: #f7f8fa; } .ds-icon-button:focus-visible { outline: 2px solid #465bdb; outline-offset: 2px; } .ds-icon-button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }"
+    },
+    {
+      "name": "Pipeline Strip",
+      "kind": "custom",
+      "description": "A non-interactive legend for the Shiki to Tokens to HTML rendering path.",
+      "html": "<div class=\"ds-pipeline\" aria-label=\"渲染管线\"><b>Shiki</b><i></i><b>Tokens</b><i></i><b>HTML</b></div>",
+      "css": ".ds-pipeline { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 6px; padding: 9px 16px; color: #68707d; background: #f7f8fa; border-bottom: 1px solid #dedfe2; font: 11px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; } .ds-pipeline b { color: #0f1115; font-weight: 600; text-align: center; } .ds-pipeline i { width: 12px; height: 1px; background: #dedfe2; }"
+    },
+    {
+      "name": "Language Select",
+      "kind": "input",
+      "description": "The labeled language selector used to drive both public rendering services.",
+      "html": "<label class=\"ds-field\"><span>语言</span><select><option>typescript</option><option>纯文本（回退）</option></select></label>",
+      "css": ".ds-field { display: grid; gap: 4px; color: #68707d; font: 11px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; } .ds-field select { min-height: 32px; padding: 0 30px 0 10px; color: #0f1115; background: #fff; border: 1px solid #dedfe2; border-radius: 9px; font: 13px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; } .ds-field select:focus-visible { outline: 2px solid #465bdb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Source Editor",
+      "kind": "input",
+      "refersTo": "source-editor",
+      "description": "A compact fixed-width editor for changing the integration probe source.",
+      "html": "<textarea class=\"ds-source-editor\" aria-label=\"示例代码\" spellcheck=\"false\">const result = render(code)</textarea>",
+      "css": ".ds-source-editor { width: 100%; min-height: 128px; resize: none; padding: 12px; color: #0f1115; caret-color: #465bdb; background: #f7f8fa; border: 1px solid transparent; border-radius: 10px 10px 0 0; outline: none; font: 12px/1.55 \"SF Mono\", Consolas, monospace; tab-size: 2; } .ds-source-editor:focus { outline: 2px solid #465bdb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Output Tabs",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "The accessible three-representation switcher for Preview, Tokens, and HTML.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\" aria-label=\"输出类型\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">预览</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Tokens</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">HTML</button></div>",
+      "css": ".ds-tabs { display: flex; align-items: center; gap: 2px; padding: 6px; background: #fff; border: 1px solid #dedfe2; } .ds-tab { min-height: 30px; padding: 0 10px; color: #68707d; background: transparent; border: 0; border-radius: 8px; font: 12px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; cursor: pointer; } .ds-tab:hover { color: #0f1115; background: #f7f8fa; } .ds-tab:focus-visible { outline: 2px solid #465bdb; outline-offset: 2px; } .ds-tab[aria-selected=\"true\"] { color: #465bdb; background: #eef0ff; font-weight: 650; }"
+    },
+    {
+      "name": "Structured Output Pane",
+      "kind": "card",
+      "description": "A scrollable fixed-width pane for token JSON or escaped rendered HTML.",
+      "html": "<pre class=\"ds-data-pane\">{ &quot;language&quot;: &quot;typescript&quot;, &quot;tokens&quot;: [] }</pre>",
+      "css": ".ds-data-pane { min-height: 160px; margin: 0; padding: 14px; overflow: auto; white-space: pre-wrap; word-break: break-word; color: #0f1115; background: #f7f8fa; border: 1px solid #dedfe2; border-radius: 0 0 12px 12px; font: 11px/1.55 \"SF Mono\", Consolas, monospace; } .ds-data-pane::selection { color: #fff; background: #465bdb; }"
+    },
+    {
+      "name": "Collapsed Launcher",
+      "kind": "button",
+      "refersTo": "launcher",
+      "description": "The persistent control that reopens the local preview after collapse.",
+      "html": "<button class=\"ds-launcher\" type=\"button\">打开渲染预览</button>",
+      "css": ".ds-launcher { min-width: 112px; min-height: 44px; padding: 0 14px; color: #fff; background: #465bdb; border: 0; border-radius: 11px; box-shadow: 0 8px 24px rgb(70 91 219 / 28%); font: 650 13px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; cursor: pointer; } .ds-launcher:focus-visible { outline: 2px solid #465bdb; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Native Debugging Instrument",
+    "overview": "This visual contract belongs only to the private `integration/consumer` preview. Its FORM is `local-extension/no-roll`: a deliberately scoped extension that borrows the established DSH light system UI so it feels native inside the host, without creating or implying a broader repository design system.\n\nThe overlay makes the Shiki → Tokens → HTML mechanism directly inspectable. It stays visually quiet and operational: one bordered right-side tool surface, compact system typography, monospace only for code and structured data, and an indigo accent reserved for interaction and focus. Its visual hierarchy supports the public `syntaxHighlighter` and `codeRenderer` service boundary; it does not turn DSH into a dashboard or add UI to published packages.",
+    "keyCharacteristics": [
+      "Private, local, and developer-facing.",
+      "Matched to DSH's restrained light system interface.",
+      "One compact overlay with code-first density.",
+      "Public service output is inspectable in Preview, Tokens, and HTML representations.",
+      "Collapsible so the host interface remains usable."
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Instrument Indigo is the only interactive accent; do not introduce competing action colors.", "section": "colors" },
+      { "name": "The Host-Light Rule", "body": "This overlay always declares a light color scheme and remains visually compatible with the established DSH light UI.", "section": "colors" },
+      { "name": "The Monospace Boundary Rule", "body": "Use monospace only where the user is reading or editing code, tokens, or HTML; all surrounding interface copy stays in the system sans serif.", "section": "typography" },
+      { "name": "The Host-Presence Rule", "body": "The preview may cover the host while open, but it must always collapse to a small lower-right launcher.", "section": "layout" },
+      { "name": "The Two-Elevation Rule", "body": "Use ambient shadow only for the fixed overlay and its collapsed launcher; internal panes stay flat and bordered.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep this design contract scoped to `integration/consumer` and FORM `local-extension/no-roll`.",
+      "Do match the established DSH light UI through system typography, cool neutrals, compact density, and restrained rounding.",
+      "Do expose results from the public `syntaxHighlighter` and `codeRenderer` services without duplicating their rendering logic.",
+      "Do preserve keyboard focus, labeled controls, ARIA tabs, and collapse/reopen behavior.",
+      "Do preserve host usability at desktop and mobile viewport sizes."
+    ],
+    "donts": [
+      "Don't treat this file as a design system for the repository, published packages, or DSH as a whole.",
+      "Don't add dashboard chrome, marketing styling, or a second accent hierarchy.",
+      "Don't move preview UI or preview-only tokens into any published package.",
+      "Don't use monospace for general interface copy.",
+      "Don't let internal cards or panes compete with the overlay shell through extra shadow."
+    ]
+  }
+}

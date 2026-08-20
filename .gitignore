@@ -1,0 +1,7 @@
+lib/
+packages/*/lib/
+packages/*/.test-build/
+integration/*/lib/
+node_modules/
+*.tgz
+.impeccable/review/

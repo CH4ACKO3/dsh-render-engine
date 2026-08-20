@@ -104,23 +104,9 @@ integration/
 
 ## 发布
 
-GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布三个包。每次发布前先更新包版本并推送到 `main`，等待 CI 通过，然后运行该工作流并选择 `latest` 或 `next` npm 标签。
+GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布三个包。三个包都已完成 Trusted Publisher 配置，GitHub 中不保存长期 npm token。
 
-npm 只允许为已经存在的包配置 Trusted Publisher，因此首次 `0.1.0` 需要通过已登录的本地 npm CLI 发布一次。完成首次发布后，将三个包绑定到 `CH4ACKO3/dsh-render-engine` 仓库的 `release.yml` 工作流：
-
-```sh
-npm install --global npm@11.19.0
-npm login
-pnpm --dir packages/shiki publish --access public
-pnpm --dir packages/syntax-highlight publish --access public
-pnpm --dir packages/code-render publish --access public
-
-npm trust github @ch4acko3/dsh-shiki --repo CH4ACKO3/dsh-render-engine --file release.yml --allow-publish --yes
-npm trust github @ch4acko3/dsh-syntax-highlight --repo CH4ACKO3/dsh-render-engine --file release.yml --allow-publish --yes
-npm trust github @ch4acko3/dsh-code-render --repo CH4ACKO3/dsh-render-engine --file release.yml --allow-publish --yes
-```
-
-Trusted Publishing 要求 npm 11.15 或更高版本，并要求 npm 账号启用双重验证。GitHub 中不保存长期 npm token。
+每次发布前先更新包版本并推送到 `main`，等待 CI 通过，然后运行该工作流并选择 `latest` 或 `next` npm 标签。
 
 ## 许可证
 

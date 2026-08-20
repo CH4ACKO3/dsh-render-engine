@@ -72,6 +72,11 @@
     "syntax-highlighting",
     "code-tokens"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CH4ACKO3/dsh-render-engine.git",
+    "directory": "packages/syntax-highlight"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"

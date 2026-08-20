@@ -72,6 +72,11 @@
     "shiki",
     "syntax-highlighting"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CH4ACKO3/dsh-render-engine.git",
+    "directory": "packages/shiki"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"

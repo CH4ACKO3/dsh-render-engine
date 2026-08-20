@@ -1,0 +1,64 @@
+name: Publish packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: npm distribution tag
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - next
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DIST_TAG: ${{ inputs.tag }}
+    steps:
+      - name: Require the main branch
+        run: test "$GITHUB_REF_NAME" = main
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.19.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.11.1
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Install current npm CLI
+        run: npm install --global npm@11.19.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify packages
+        run: pnpm check
+
+      - name: Pack packages
+        run: |
+          pnpm --dir packages/shiki pack --out "$RUNNER_TEMP/dsh-shiki.tgz"
+          pnpm --dir packages/syntax-highlight pack --out "$RUNNER_TEMP/dsh-syntax-highlight.tgz"
+          pnpm --dir packages/code-render pack --out "$RUNNER_TEMP/dsh-code-render.tgz"
+
+      - name: Publish packages
+        run: |
+          npm publish "$RUNNER_TEMP/dsh-shiki.tgz" --access public --tag "$DIST_TAG"
+          npm publish "$RUNNER_TEMP/dsh-syntax-highlight.tgz" --access public --tag "$DIST_TAG"
+          npm publish "$RUNNER_TEMP/dsh-code-render.tgz" --access public --tag "$DIST_TAG"

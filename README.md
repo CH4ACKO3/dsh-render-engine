@@ -102,6 +102,26 @@ integration/
   consumer/           Private DSH browser probe and preview
 ```
 
+## Publishing
+
+The `Publish packages` GitHub Actions workflow publishes the three packages manually, in dependency order, using npm Trusted Publishing (OIDC). Before every release, update the package versions, push them to `main`, wait for CI, and run the workflow with either the `latest` or `next` npm tag.
+
+The initial `0.1.0` release must be published once from an authenticated local npm CLI because npm only allows Trusted Publishers to be configured for packages that already exist. After that bootstrap release, bind all three packages to `CH4ACKO3/dsh-render-engine` and the `release.yml` workflow:
+
+```sh
+npm install --global npm@11.19.0
+npm login
+pnpm --dir packages/shiki publish --access public
+pnpm --dir packages/syntax-highlight publish --access public
+pnpm --dir packages/code-render publish --access public
+
+npm trust github @ch4acko3/dsh-shiki --repo CH4ACKO3/dsh-render-engine --file release.yml --allow-publish --yes
+npm trust github @ch4acko3/dsh-syntax-highlight --repo CH4ACKO3/dsh-render-engine --file release.yml --allow-publish --yes
+npm trust github @ch4acko3/dsh-code-render --repo CH4ACKO3/dsh-render-engine --file release.yml --allow-publish --yes
+```
+
+Trusted Publishing requires npm 11.15 or newer and npm account 2FA. No long-lived npm token is stored in GitHub.
+
 ## License
 
 [MIT](./LICENSE)

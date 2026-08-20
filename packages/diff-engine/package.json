@@ -1,8 +1,7 @@
 {
-  "name": "@ch4acko3/dsh-render-engine-integration",
+  "name": "@ch4acko3/dsh-diff-engine",
   "version": "0.1.0",
-  "private": true,
-  "description": "Browser integration probe for the DSH Render Engine monorepo",
+  "description": "Normalized diff engine service for DeepSeek Harness Web plugins",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -19,13 +18,17 @@
   },
   "files": [
     "lib",
-    "cordis.patch.yml"
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "pnpm run build:client && pnpm run build:host",
     "build:client": "tsdown --config-loader unrun && tsc -p tsconfig.client.build.json",
     "build:host": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
+    "prepack": "pnpm run build"
   },
   "engines": {
     "node": "^22.22.3 || >=24.11.1"
@@ -34,12 +37,12 @@
     "plugin": {
       "schemaVersion": 1,
       "displayName": {
-        "en": "Render Engine Integration Probe",
-        "zh-CN": "渲染引擎集成探针"
+        "en": "Diff Engine",
+        "zh-CN": "Diff 引擎"
       },
       "summary": {
-        "en": "Private browser integration probe for DSH Render Engine.",
-        "zh-CN": "用于验证 DSH Render Engine 的私有浏览器集成探针。"
+        "en": "Normalizes file snapshots, DSH file diffs, and unified patches into one structured diff format.",
+        "zh-CN": "将文件快照、DSH 文件差异和 unified patch 归一化为统一的结构化 Diff。"
       },
       "category": "development"
     },
@@ -49,12 +52,7 @@
     "client": {
       "immediately": true,
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
-        "@ch4acko3/dsh-diff-engine",
-        "@ch4acko3/dsh-diff-render",
-        "@ch4acko3/dsh-shiki",
-        "@ch4acko3/dsh-syntax-highlight",
-        "@ch4acko3/dsh-code-render"
+        "@deepseek-ai/dsh-client-runtime"
       ],
       "platform": "web"
     }
@@ -64,11 +62,22 @@
     "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.8"
   },
   "dependencies": {
-    "@ch4acko3/dsh-code-render": "workspace:*",
-    "@ch4acko3/dsh-diff-engine": "workspace:*",
-    "@ch4acko3/dsh-diff-render": "workspace:*",
-    "@ch4acko3/dsh-shiki": "workspace:*",
-    "@ch4acko3/dsh-syntax-highlight": "workspace:*"
+    "diff": "^9.0.0"
   },
-  "license": "MIT"
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "diff",
+    "unified-diff"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CH4ACKO3/dsh-render-engine.git",
+    "directory": "packages/diff-engine"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,5 +1,7 @@
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@ch4acko3/dsh-code-render/client'
+import type {} from '@ch4acko3/dsh-diff-engine/client'
+import type {} from '@ch4acko3/dsh-diff-render/client'
 import type {} from '@ch4acko3/dsh-shiki/client'
 import type {} from '@ch4acko3/dsh-syntax-highlight/client'
 
@@ -14,6 +16,16 @@ export function render(code: string): RenderResult {
   return {
     language: 'typescript',
     highlighted: code.length > 0,
+  }
+}`
+
+const SAMPLE_BEFORE = `type RenderResult = {
+  language: string
+}
+
+export function render(code: string): RenderResult {
+  return {
+    language: 'plaintext',
   }
 }`
 
@@ -241,21 +253,21 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
 
   const root = document.createElement('aside')
   root.id = ROOT_ID
-  root.setAttribute('aria-label', '代码渲染实验台')
+  root.setAttribute('aria-label', '代码与 Diff 渲染实验台')
   root.dataset.collapsed = 'false'
   root.innerHTML = `
     <!--
       THESIS: Make the Shiki → Tokens → HTML mechanism directly inspectable without turning DSH into a dashboard.
       OWN-WORLD: Inherit DSH's light system UI; one bordered right-side tool surface; monospace only for code and data.
-      STORY: Edit source, choose a language, inspect three representations, and collapse the tool when finished.
+      STORY: Edit source, choose a language, inspect code and diff outputs, and collapse the tool when finished.
       FIRST VIEWPORT: A 460px desktop tool window; below 720px, fill the viewport inside an 8px safe inset.
       FORM: local-extension/no-roll — scoped extension, so no concept seed was run.
       FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
     -->
     <header class="dre-header">
       <div class="dre-title">
-        <strong>代码渲染实验台</strong>
-        <span>dsh-shiki → syntax-highlight → code-render</span>
+        <strong>代码与 Diff 渲染实验台</strong>
+        <span>code and diff normalization, highlighting, and HTML</span>
       </div>
       <span class="dre-status">${integrationPassed ? '服务正常' : '检查失败'}</span>
       <button class="dre-icon-button" type="button" aria-label="收起预览" aria-expanded="true">
@@ -263,7 +275,7 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
       </button>
     </header>
     <div class="dre-pipeline" aria-label="渲染管线">
-      <b>Shiki</b><i></i><b>Tokens</b><i></i><b>HTML</b>
+      <b>Normalize</b><i></i><b>Highlight</b><i></i><b>HTML</b>
     </div>
     <section class="dre-editor">
       <div class="dre-field-row">
@@ -277,10 +289,12 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
     <section class="dre-output">
       <div class="dre-tabs" role="tablist" aria-label="输出类型">
         <button class="dre-tab" id="dre-tab-preview" type="button" role="tab" aria-controls="dre-pane-preview" aria-selected="true" tabindex="0" data-tab="preview">预览</button>
+        <button class="dre-tab" id="dre-tab-diff" type="button" role="tab" aria-controls="dre-pane-diff" aria-selected="false" tabindex="-1" data-tab="diff">Diff</button>
         <button class="dre-tab" id="dre-tab-tokens" type="button" role="tab" aria-controls="dre-pane-tokens" aria-selected="false" tabindex="-1" data-tab="tokens">Tokens</button>
         <button class="dre-tab" id="dre-tab-html" type="button" role="tab" aria-controls="dre-pane-html" aria-selected="false" tabindex="-1" data-tab="html">HTML</button>
       </div>
       <div class="dre-pane dre-rendered" id="dre-pane-preview" data-pane="preview" role="tabpanel" aria-labelledby="dre-tab-preview"></div>
+      <div class="dre-pane dre-rendered" id="dre-pane-diff" data-pane="diff" role="tabpanel" aria-labelledby="dre-tab-diff" hidden></div>
       <pre class="dre-pane dre-data" id="dre-pane-tokens" data-pane="tokens" role="tabpanel" aria-labelledby="dre-tab-tokens" hidden></pre>
       <pre class="dre-pane dre-data" id="dre-pane-html" data-pane="html" role="tabpanel" aria-labelledby="dre-tab-html" hidden></pre>
     </section>
@@ -291,9 +305,10 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
   const language = root.querySelector<HTMLSelectElement>('[data-role="language"]')
   const source = root.querySelector<HTMLTextAreaElement>('[data-role="source"]')
   const previewPane = root.querySelector<HTMLElement>('[data-pane="preview"]')
+  const diffPane = root.querySelector<HTMLElement>('[data-pane="diff"]')
   const tokensPane = root.querySelector<HTMLElement>('[data-pane="tokens"]')
   const htmlPane = root.querySelector<HTMLElement>('[data-pane="html"]')
-  if (language === null || source === null || previewPane === null || tokensPane === null || htmlPane === null) {
+  if (language === null || source === null || previewPane === null || diffPane === null || tokensPane === null || htmlPane === null) {
     throw new Error('Render preview failed to create its controls')
   }
 
@@ -310,7 +325,14 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
     const request = { code: source.value, language: language.value }
     const highlighted = ctx.syntaxHighlighter.highlight(request)
     const rendered = ctx.codeRenderer.render(request)
+    const diff = ctx.diffEngine.diff({
+      kind: 'files',
+      before: { path: 'sample.ts', content: SAMPLE_BEFORE, language: language.value },
+      after: { path: 'sample.ts', content: source.value, language: language.value },
+    })
+    const renderedDiff = ctx.diffRenderer.render(diff)
     previewPane.innerHTML = rendered.html
+    diffPane.innerHTML = renderedDiff.html
     tokensPane.textContent = JSON.stringify(highlighted, null, 2)
     htmlPane.textContent = rendered.html
   }

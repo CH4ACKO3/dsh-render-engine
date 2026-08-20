@@ -32,6 +32,12 @@ importers:
       '@ch4acko3/dsh-code-render':
         specifier: workspace:*
         version: link:../../packages/code-render
+      '@ch4acko3/dsh-diff-engine':
+        specifier: workspace:*
+        version: link:../../packages/diff-engine
+      '@ch4acko3/dsh-diff-render':
+        specifier: workspace:*
+        version: link:../../packages/diff-render
       '@ch4acko3/dsh-shiki':
         specifier: workspace:*
         version: link:../../packages/shiki
@@ -47,6 +53,33 @@ importers:
 
   packages/code-render:
     dependencies:
+      '@ch4acko3/dsh-syntax-highlight':
+        specifier: workspace:^
+        version: link:../syntax-highlight
+      '@deepseek-ai/cordis':
+        specifier: ^4.0.1
+        version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: 0.1.0-rc.8
+        version: 0.1.0-rc.8(0e60b9f95af714a85e67a98df3af0bfd)
+
+  packages/diff-engine:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: ^4.0.1
+        version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: 0.1.0-rc.8
+        version: 0.1.0-rc.8(0e60b9f95af714a85e67a98df3af0bfd)
+      diff:
+        specifier: ^9.0.0
+        version: 9.0.0
+
+  packages/diff-render:
+    dependencies:
+      '@ch4acko3/dsh-diff-engine':
+        specifier: workspace:^
+        version: link:../diff-engine
       '@ch4acko3/dsh-syntax-highlight':
         specifier: workspace:^
         version: link:../syntax-highlight
@@ -1091,6 +1124,10 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
+
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
+    engines: {node: '>=0.3.1'}
 
   dts-resolver@3.0.0:
     resolution: {integrity: sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q==}
@@ -2223,6 +2260,8 @@ snapshots:
   devlop@1.1.0:
     dependencies:
       dequal: 2.0.3
+
+  diff@9.0.0: {}
 
   dts-resolver@3.0.0: {}
 

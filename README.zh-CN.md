@@ -2,7 +2,7 @@
 
 [English](./README.md) | 简体中文
 
-一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token，以及安全的 HTML 代码块渲染拆分为三个可以独立发布的 npm 包。
+一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、归一化 Diff，以及安全的代码和 Diff HTML 渲染拆分为五个可以独立发布的 npm 包。
 
 ## 包结构
 
@@ -11,14 +11,19 @@
 | `@ch4acko3/dsh-shiki` | `ctx.shiki` | 管理一个共享的 Shiki 引擎和内置语言集合。 |
 | `@ch4acko3/dsh-syntax-highlight` | `ctx.syntaxHighlighter` | 将源码转换为稳定、响应主题的 token；无法识别语言时回退为纯文本。 |
 | `@ch4acko3/dsh-code-render` | `ctx.codeRenderer` | 将高亮 token 转换为经过转义的 HTML 代码块。 |
+| `@ch4acko3/dsh-diff-engine` | `ctx.diffEngine` | 将完整文件快照、DSH 文件差异和 unified patch 归一化为统一文档。 |
+| `@ch4acko3/dsh-diff-render` | `ctx.diffRenderer` | 将归一化 Diff 渲染为经过转义并带源码语法高亮的 HTML。 |
 
 依赖方向保持单向：
 
 ```text
 dsh-shiki <- dsh-syntax-highlight <- dsh-code-render
+                    ^
+                    |
+dsh-diff-engine ----+-----------> dsh-diff-render
 ```
 
-仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的三个包计划对外发布。
+仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的五个包计划对外发布。
 
 ## 功能
 
@@ -28,9 +33,12 @@ dsh-shiki <- dsh-syntax-highlight <- dsh-code-render
 - 使用 CSS 变量输出颜色，跟随 DSH 主题。
 - 语言未提供或不受支持时自动回退为纯文本。
 - 生成 HTML 时转义源码内容。
-- 提供私有交互式预览，可在真实 DSH 浏览器运行时中查看代码、token 和渲染结果。
+- 显式支持完整文件、DSH `FileDiff` 片段、unified 或 Git patch 三种 Diff 输入。
+- 使用一个稳定 Diff 文档表达文件、hunk、行、状态、源码完整度和统计信息。
+- 在增删、上下文和元数据行的语义样式上叠加源码语言 token 颜色。
+- 提供私有交互式预览，可在真实 DSH 浏览器运行时中查看代码、token、代码 HTML 和 Diff HTML。
 
-内置语言：Bash、C、C++、CSS、Go、HTML、Java、JavaScript、JSX、JSON、Markdown、Python、Rust、SQL、TSX、TypeScript 和 YAML。支持 `sh`、`js`、`md`、`py`、`rs`、`ts`、`yml`、`zsh` 等常见别名。
+内置语言：Bash、C、C++、CSS、Diff、Go、HTML、Java、JavaScript、JSX、JSON、Markdown、Python、Rust、SQL、TSX、TypeScript 和 YAML。支持 `sh`、`js`、`md`、`patch`、`py`、`rs`、`ts`、`yml`、`zsh` 等常见别名。
 
 ## 环境要求
 
@@ -75,6 +83,21 @@ const highlighted = ctx.syntaxHighlighter.highlight({ code, language: 'ts' })
 
 `ctx.shiki.tokenize()` 要求传入受支持的语言。`ctx.syntaxHighlighter.highlight()` 和 `ctx.codeRenderer.render()` 可以接收缺失或未知的语言，并返回未高亮的纯文本结果。
 
+完整文件、DSH 文件差异片段和 unified patch 都会归一化为相同文档，再交给同一个 renderer：
+
+```ts
+const document = ctx.diffEngine.diff({
+  kind: 'files',
+  before: { path: 'app.ts', content: 'const value = 1\n' },
+  after: { path: 'app.ts', content: 'const value = 2\n' },
+})
+
+const rendered = ctx.diffRenderer.render(document)
+console.log(rendered.html)
+```
+
+Diff 引擎不执行文件 IO，也不运行 Git 命令。完整文件会保留源码快照，用于完整源码语法高亮；只有 patch 或 DSH 片段时，则使用各 hunk 内可获得的源码上下文进行高亮。
+
 ## 本地 DSH 预览
 
 先构建 workspace，再将三个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
@@ -85,11 +108,13 @@ pnpm build
 dsh plugin --profile web add "file:$PWD/packages/shiki"
 dsh plugin --profile web add "file:$PWD/packages/syntax-highlight"
 dsh plugin --profile web add "file:$PWD/packages/code-render"
+dsh plugin --profile web add "file:$PWD/packages/diff-engine"
+dsh plugin --profile web add "file:$PWD/packages/diff-render"
 dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在渲染预览、结构化 token 和转义后的 HTML 之间切换。integration consumer 仅用于本地验证，不应发布。
+打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码渲染、结构化 token、转义后的代码 HTML，以及相对于示例基线的实时 Diff 之间切换。integration consumer 仅用于本地验证，不应发布。
 
 ## 仓库结构
 
@@ -98,13 +123,15 @@ packages/
   shiki/              共享 Shiki 引擎
   syntax-highlight/   稳定的高亮 token 服务
   code-render/        安全 HTML 渲染器
+  diff-engine/        多输入归一化 Diff 引擎
+  diff-render/        带语法高亮的 HTML Diff 渲染器
 integration/
   consumer/           私有 DSH 浏览器探针和预览
 ```
 
 ## 发布
 
-GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布三个包。三个包都已完成 Trusted Publisher 配置，GitHub 中不保存长期 npm token。
+GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布五个包。GitHub 中不保存长期 npm token；每个包首次发布前都必须完成 npm Trusted Publisher 配置。
 
 每次发布前先更新包版本并推送到 `main`，等待 CI 通过，然后运行该工作流并选择 `latest` 或 `next` npm 标签。
 

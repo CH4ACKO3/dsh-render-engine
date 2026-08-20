@@ -16,7 +16,17 @@ test('resolves common language aliases', () => {
 
   assert.equal(shiki.resolveLanguage('TS'), 'typescript')
   assert.equal(shiki.resolveLanguage('py'), 'python')
+  assert.equal(shiki.resolveLanguage('patch'), 'diff')
   assert.equal(shiki.resolveLanguage('cobol'), null)
+})
+
+test('tokenizes unified patches with the bundled diff grammar', () => {
+  const shiki = new ShikiEngine()
+  const code = '@@ -1 +1 @@\n-old\n+new\n'
+  const result = shiki.tokenize({ code, language: 'diff' })
+
+  assert.equal(result.language, 'diff')
+  assert.equal(sourceOf(result.lines, result.lineEndings), code)
 })
 
 test('tokenizes supported source with the DSH CSS variable theme', () => {

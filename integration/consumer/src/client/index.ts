@@ -1,5 +1,7 @@
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@ch4acko3/dsh-code-render/client'
+import type {} from '@ch4acko3/dsh-diff-engine/client'
+import type {} from '@ch4acko3/dsh-diff-render/client'
 import type {} from '@ch4acko3/dsh-shiki/client'
 import type {} from '@ch4acko3/dsh-syntax-highlight/client'
 import { installPreview } from './preview.js'
@@ -12,10 +14,13 @@ interface IntegrationResult {
   fallbackIsPlain: boolean
   escapedHtml: boolean
   themedHtml: boolean
+  diffInputKinds: boolean
+  diffHighlighted: boolean
+  diffEscapedHtml: boolean
 }
 
 export const name = '@ch4acko3/dsh-render-engine-integration'
-export const inject = ['shiki', 'syntaxHighlighter', 'codeRenderer'] as const
+export const inject = ['shiki', 'syntaxHighlighter', 'codeRenderer', 'diffEngine', 'diffRenderer'] as const
 
 function sourceOf(
   lines: Array<Array<{ content: string }>>,
@@ -32,6 +37,20 @@ export function apply(ctx: ClientContext): void {
   const highlighted = ctx.syntaxHighlighter.highlight({ code: source, language: 'ts' })
   const fallback = ctx.syntaxHighlighter.highlight({ code: '<unsafe>', language: 'cobol' })
   const rendered = ctx.codeRenderer.render({ code: '<script>alert(1)</script>', language: 'text' })
+  const filesDiff = ctx.diffEngine.diff({
+    kind: 'files',
+    before: { path: 'sample.ts', content: 'const value = 1\n' },
+    after: { path: 'sample.ts', content: 'const value = <script>\n', language: 'ts' },
+  })
+  const fragmentsDiff = ctx.diffEngine.diff({
+    kind: 'file-diffs',
+    diffs: [{ path: 'sample.ts', oldText: 'const value = 1', newText: 'const value = 2', language: 'ts' }],
+  })
+  const patchDiff = ctx.diffEngine.diff({
+    kind: 'patch',
+    patch: '--- a/sample.ts\n+++ b/sample.ts\n@@ -1 +1 @@\n-const value = 1\n+const value = 2\n',
+  })
+  const renderedDiff = ctx.diffRenderer.render(filesDiff)
 
   const result: IntegrationResult = {
     passed: false,
@@ -41,6 +60,11 @@ export function apply(ctx: ClientContext): void {
     fallbackIsPlain: !fallback.highlighted && sourceOf(fallback.lines, fallback.lineEndings) === '<unsafe>',
     escapedHtml: rendered.html.includes('&lt;script&gt;') && !rendered.html.includes('<script>'),
     themedHtml: rendered.html.includes('var(--shiki-background)') && rendered.html.includes('var(--shiki-foreground)'),
+    diffInputKinds: filesDiff.files.length === 1
+      && fragmentsDiff.files.length === 1
+      && patchDiff.files.length === 1,
+    diffHighlighted: renderedDiff.highlighted,
+    diffEscapedHtml: renderedDiff.html.includes('&lt;script&gt;') && !renderedDiff.html.includes('<script>'),
   }
   result.passed = result.language === 'typescript'
     && result.tokenizedSource === source
@@ -48,6 +72,9 @@ export function apply(ctx: ClientContext): void {
     && result.fallbackIsPlain
     && result.escapedHtml
     && result.themedHtml
+    && result.diffInputKinds
+    && result.diffHighlighted
+    && result.diffEscapedHtml
 
   document.documentElement.dataset.dshRenderEngineIntegration = JSON.stringify(result)
   console.info('[dsh-render-engine:integration]', JSON.stringify(result))

@@ -2,6 +2,7 @@ import langBash from '@shikijs/langs/shellscript'
 import langC from '@shikijs/langs/c'
 import langCpp from '@shikijs/langs/cpp'
 import langCss from '@shikijs/langs/css'
+import langDiff from '@shikijs/langs/diff'
 import langGo from '@shikijs/langs/go'
 import langHtml from '@shikijs/langs/html'
 import langJava from '@shikijs/langs/java'
@@ -21,6 +22,7 @@ export const bundledLanguages = [
   langC,
   langCpp,
   langCss,
+  langDiff,
   langGo,
   langHtml,
   langJava,
@@ -41,6 +43,7 @@ export const supportedLanguages = [
   'c',
   'cpp',
   'css',
+  'diff',
   'go',
   'html',
   'java',
@@ -61,6 +64,8 @@ const aliases = new Map<string, string>([
   ['c', 'c'],
   ['cpp', 'cpp'],
   ['css', 'css'],
+  ['diff', 'diff'],
+  ['patch', 'diff'],
   ['go', 'go'],
   ['html', 'html'],
   ['java', 'java'],

@@ -4,6 +4,34 @@ English | [简体中文](./README.zh-CN.md)
 
 A small monorepo of browser-side rendering services for DeepSeek Harness Web plugins. It separates Shiki tokenization, stable syntax-highlight tokens, normalized diffs, diagnostic code frames, ANSI terminal output, and safe HTML rendering into seven independently publishable npm packages.
 
+## Renderer services, not a frontend
+
+The seven published packages do **not** ship a page, panel, ChatView card, or other concrete frontend. They register reusable browser-side Cordis services such as `ctx.codeRenderer`, `ctx.diffRenderer`, and `ctx.ansiRenderer`. A downstream plugin chooses the host surface and interaction, calls the services with its own data, and receives normalized structures, stable tokens, or escaped theme-aware HTML that it can embed in that surface.
+
+The ChatView cards shown below belong only to the private `integration/consumer`. They demonstrate one possible adapter built on the public services; they are not UI bundled with the published renderer packages.
+
+## See it in ChatView
+
+The same persisted patch is expanded on both sides. Native DSH presents it as plain text; a downstream adapter can call `dsh-diff-engine` and `dsh-diff-render` to produce a structured, themed, syntax-aware review surface.
+
+![The same expanded patch shown as plain unified text in native DSH ChatView and as a structured, syntax-highlighted diff with the Render Engine adapter](./docs/assets/chatview-rendering-comparison.png)
+
+Both sides use the same persisted command output. The private integration consumer connects the public services to a real DSH conversation slot so their effect can be compared with the native fallback.
+
+### More real ChatView comparisons
+
+The same TypeScript source changes from an expanded plain-text command result into a compact syntax-highlighted code surface.
+
+![The same TypeScript source shown as plain text in native DSH ChatView and with syntax highlighting through the Code Render adapter](./docs/assets/chatview-code-comparison.png)
+
+A raw diagnostic request becomes a focused code frame with source context, line numbers, an underlined range, and the error message beside the affected line.
+
+![The same diagnostic shown as raw JSON in native DSH ChatView and as an annotated source frame through the Code Frame adapter](./docs/assets/chatview-code-frame-comparison.png)
+
+ANSI control sequences are interpreted into readable terminal color and emphasis while preserving the original text.
+
+![The same terminal output shown with visible ANSI escape sequences in native DSH ChatView and with terminal styling through the ANSI Render adapter](./docs/assets/chatview-ansi-comparison.png)
+
 ## Packages
 
 | Package | Cordis service | Responsibility |
@@ -145,7 +173,7 @@ dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-Open the URL printed by `dsh web`. The preview overlay lets you edit source code, choose a language, and switch between code, code-frame, diff, ANSI, token, and escaped HTML outputs. The integration consumer is for local verification only and must not be published.
+Open the URL printed by `dsh web`. The preview overlay lets you edit source code, choose a language, and switch between code, code-frame, diff, ANSI, token, and escaped HTML outputs. Run `/codedemo`, `/framedemo`, `/ansidemo`, or `/renderdemo` in ChatView to exercise the same services through native command slots. The integration consumer is for local verification only and must not be published.
 
 ## Repository layout
 
@@ -164,9 +192,15 @@ integration/
 
 ## Publishing
 
-The `Publish packages` GitHub Actions workflow publishes the seven packages manually, in dependency order, using npm Trusted Publishing (OIDC). No long-lived npm token is stored in GitHub. Each package must have its npm Trusted Publisher configured before its first release.
+The `Publish packages` GitHub Actions workflow publishes one independently versioned package through npm Trusted Publishing (OIDC). No long-lived npm token is stored in GitHub. Each package must have its npm Trusted Publisher configured before its first release.
 
-Before every release, update the package versions, push them to `main`, wait for CI, and run the workflow with either the `latest` or `next` npm tag.
+Releases are tag-driven:
+
+1. Update the package version and push the commit to `main`.
+2. Wait for CI to pass on that commit.
+3. Create and push a matching package Tag, for example `dsh-code-render@0.2.0`.
+
+Each Tag publishes only its named package, so the seven packages may use different versions. Stable tags publish to npm `latest`; prerelease tags such as `dsh-code-render@0.2.0-next.0` publish to npm `next`. The workflow rejects unknown packages, malformed tags, tags whose commit is not on `main`, package-version mismatches, and versions that already exist on npm before publishing begins.
 
 ## License
 

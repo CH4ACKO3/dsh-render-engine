@@ -1,6 +1,6 @@
 {
   "name": "@ch4acko3/dsh-shiki",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared Shiki engine service for DeepSeek Harness Web plugins",
   "type": "module",
   "main": "./lib/index.js",

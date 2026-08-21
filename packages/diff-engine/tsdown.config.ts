@@ -23,6 +23,10 @@ export default defineConfig({
   hash: false,
   sourcemap: true,
   dts: false,
+  deps: {
+    alwaysBundle: [/^diff$/],
+    onlyBundle: false,
+  },
   banner: { js: moduleHeader },
   footer: { js: moduleFooter },
 })

@@ -4,6 +4,34 @@
 
 一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、归一化 Diff、诊断代码框、ANSI 终端输出和安全 HTML 渲染拆分为七个可以独立发布的 npm 包。
 
+## 提供渲染服务，而不是具体前端
+
+七个公开包**不会**附带页面、面板、ChatView 卡片或其他具体前端。它们注册 `ctx.codeRenderer`、`ctx.diffRenderer`、`ctx.ansiRenderer` 等可复用的浏览器端 Cordis 服务。下游插件自行决定承载界面和交互方式，将自己的数据交给这些服务，并取得可以嵌入目标界面的归一化结构、稳定 token，或经过转义且响应主题的 HTML。
+
+下方展示的 ChatView 卡片只属于私有的 `integration/consumer`。它们用于演示公开服务的一种接入方式，并不是随公开渲染器包发布的 UI。
+
+## 在 ChatView 中的效果
+
+左右两侧展开的是同一条持久化 patch。原生 DSH 以纯文本展示；下游适配器调用 `dsh-diff-engine` 和 `dsh-diff-render` 后，可以生成结构化、响应主题并带语法高亮的代码审阅界面。
+
+![同一条已展开的 patch：原生 DSH ChatView 显示纯文本 unified diff，Render Engine 适配器显示结构化并带语法高亮的 diff](./docs/assets/chatview-rendering-comparison.png)
+
+左右两侧使用同一条持久化命令输出。私有 integration consumer 将公开服务接入真实 DSH 会话插槽，从而可以和原生 fallback 进行对比。
+
+### 更多真实 ChatView 对比
+
+同一段 TypeScript 源码从已展开的纯文本命令结果，变为紧凑并带语法高亮的代码界面。
+
+![同一段 TypeScript 源码：原生 DSH ChatView 显示纯文本，Code Render 适配器显示语法高亮代码](./docs/assets/chatview-code-comparison.png)
+
+原始诊断请求被转换为聚焦的 Code Frame，直接呈现源码上下文、行号、下划线范围，以及紧邻出错行的诊断消息。
+
+![同一条诊断：原生 DSH ChatView 显示原始 JSON，Code Frame 适配器显示带标注的源码框](./docs/assets/chatview-code-frame-comparison.png)
+
+ANSI 控制序列被解释为可读的终端颜色和强调样式，同时保持原始文本不变。
+
+![同一段终端输出：原生 DSH ChatView 显示 ANSI 转义序列，ANSI Render 适配器显示终端样式](./docs/assets/chatview-ansi-comparison.png)
+
 ## 包结构
 
 | 包 | Cordis 服务 | 职责 |
@@ -145,7 +173,7 @@ dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化 token 和转义后的 HTML 之间切换。integration consumer 仅用于本地验证，不应发布。
+打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化 token 和转义后的 HTML 之间切换。在 ChatView 中运行 `/codedemo`、`/framedemo`、`/ansidemo` 或 `/renderdemo`，可以通过原生命令插槽验证同一组服务。integration consumer 仅用于本地验证，不应发布。
 
 ## 仓库结构
 
@@ -164,9 +192,15 @@ integration/
 
 ## 发布
 
-GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布七个包。GitHub 中不保存长期 npm token；每个包首次发布前都必须完成 npm Trusted Publisher 配置。
+GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），发布一个独立版本的包。GitHub 中不保存长期 npm token；每个包首次发布前都必须完成 npm Trusted Publisher 配置。
 
-每次发布前先更新包版本并推送到 `main`，等待 CI 通过，然后运行该工作流并选择 `latest` 或 `next` npm 标签。
+发布由 Git Tag 驱动：
+
+1. 更新目标包的版本，并把提交推送到 `main`。
+2. 等待该提交的 CI 通过。
+3. 创建并推送与包版本一致的包 Tag，例如 `dsh-code-render@0.2.0`。
+
+每个 Tag 只发布其中指定的包，因此七个包可以使用不同版本。稳定版 Tag 会发布到 npm `latest`；`dsh-code-render@0.2.0-next.0` 之类的预发布 Tag 会发布到 npm `next`。正式发布前，工作流会拒绝未知包、格式错误的 Tag、不在 `main` 上的 Tag 提交、包版本与 Tag 不一致，以及 npm 上已经存在的版本。
 
 ## 许可证
 

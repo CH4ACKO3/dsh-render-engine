@@ -1,33 +1,32 @@
 name: Publish packages
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: npm distribution tag
-        required: true
-        default: latest
-        type: choice
-        options:
-          - latest
-          - next
+  push:
+    tags:
+      - 'dsh-*@*'
 
 permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      DIST_TAG: ${{ inputs.tag }}
     steps:
-      - name: Require the main branch
-        run: test "$GITHUB_REF_NAME" = main
-
-      - name: Check out repository
+      - name: Check out tagged commit
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Require the tagged commit on main
+        run: |
+          git fetch origin main --no-tags
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
@@ -42,6 +41,9 @@ jobs:
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
+      - name: Resolve release package and version
+        run: node .github/scripts/verify-release.mjs "$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+
       - name: Install current npm CLI
         run: npm install --global npm@11.19.0
 
@@ -51,22 +53,15 @@ jobs:
       - name: Verify packages
         run: pnpm check
 
-      - name: Pack packages
+      - name: Refuse already-published package versions
         run: |
-          pnpm --dir packages/shiki pack --out "$RUNNER_TEMP/dsh-shiki.tgz"
-          pnpm --dir packages/ansi-render pack --out "$RUNNER_TEMP/dsh-ansi-render.tgz"
-          pnpm --dir packages/diff-engine pack --out "$RUNNER_TEMP/dsh-diff-engine.tgz"
-          pnpm --dir packages/syntax-highlight pack --out "$RUNNER_TEMP/dsh-syntax-highlight.tgz"
-          pnpm --dir packages/code-render pack --out "$RUNNER_TEMP/dsh-code-render.tgz"
-          pnpm --dir packages/code-frame-render pack --out "$RUNNER_TEMP/dsh-code-frame-render.tgz"
-          pnpm --dir packages/diff-render pack --out "$RUNNER_TEMP/dsh-diff-render.tgz"
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version >/dev/null 2>&1; then
+            echo "Refusing to overwrite published package $PACKAGE_NAME@$PACKAGE_VERSION" >&2
+            exit 1
+          fi
 
-      - name: Publish packages
-        run: |
-          npm publish "$RUNNER_TEMP/dsh-shiki.tgz" --access public --tag "$DIST_TAG"
-          npm publish "$RUNNER_TEMP/dsh-ansi-render.tgz" --access public --tag "$DIST_TAG"
-          npm publish "$RUNNER_TEMP/dsh-diff-engine.tgz" --access public --tag "$DIST_TAG"
-          npm publish "$RUNNER_TEMP/dsh-syntax-highlight.tgz" --access public --tag "$DIST_TAG"
-          npm publish "$RUNNER_TEMP/dsh-code-render.tgz" --access public --tag "$DIST_TAG"
-          npm publish "$RUNNER_TEMP/dsh-code-frame-render.tgz" --access public --tag "$DIST_TAG"
-          npm publish "$RUNNER_TEMP/dsh-diff-render.tgz" --access public --tag "$DIST_TAG"
+      - name: Pack package
+        run: pnpm --dir "$PACKAGE_DIR" pack --out "$RUNNER_TEMP/$PACKAGE_SLUG.tgz"
+
+      - name: Publish package
+        run: npm publish "$RUNNER_TEMP/$PACKAGE_SLUG.tgz" --access public --tag "$DIST_TAG"

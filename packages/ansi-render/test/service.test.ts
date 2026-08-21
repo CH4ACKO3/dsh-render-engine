@@ -11,6 +11,7 @@ test('renders ANSI colors and styles as self-contained HTML', () => {
 
   assert.equal(result.styled, true)
   assert.match(result.html, /class="dsh-ansi-render"/)
+  assert.match(result.html, /padding:\.75em 1em/)
   assert.match(result.html, /font-weight:bold/)
   assert.match(result.html, /text-decoration:underline/)
   assert.match(result.html, /color:rgb\(/)

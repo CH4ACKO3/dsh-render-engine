@@ -2,6 +2,7 @@ lib/
 packages/*/lib/
 packages/*/.test-build/
 integration/*/lib/
+integration/*/.test-build/
 node_modules/
 *.tgz
 .impeccable/review/

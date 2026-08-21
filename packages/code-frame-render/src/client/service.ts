@@ -126,7 +126,7 @@ function renderLineTokens(tokens: HighlightToken[], ranges: LineRange[]): string
 
 function renderDiagnostic(diagnostic: CodeFrameDiagnostic): string {
   const color = diagnosticColor(diagnostic.severity)
-  return `<span class="dsh-code-frame-diagnostic dsh-code-frame-${diagnostic.severity}" data-severity="${diagnostic.severity}" style="display:grid;grid-template-columns:4.5ch minmax(0,1fr);column-gap:1ch;padding:.1em 1ch .35em;color:${color}"><span aria-hidden="true"></span><span><b>${diagnostic.severity}</b>: ${escapeHtml(diagnostic.message)}</span></span>`
+  return `<span class="dsh-code-frame-diagnostic dsh-code-frame-${diagnostic.severity}" data-severity="${diagnostic.severity}" style="display:grid;grid-template-columns:4.5ch minmax(0,1fr);column-gap:1ch;padding:.1em 1ch .35em;color:${color}"><span aria-hidden="true"></span><span><span style="font-weight:500">${diagnostic.severity}</span>: ${escapeHtml(diagnostic.message)}</span></span>`
 }
 
 export class HtmlCodeFrameRenderer implements CodeFrameRendererService {
@@ -169,7 +169,7 @@ export class HtmlCodeFrameRenderer implements CodeFrameRendererService {
 
     const header = request.fileName === undefined
       ? ''
-      : `<span class="dsh-code-frame-header" style="display:block;padding:.45em 1em;border-bottom:1px solid var(--dsh-code-frame-border,rgb(127 127 127 / 25%));font-weight:600">${escapeHtml(request.fileName)}</span>`
+      : `<span class="dsh-code-frame-header" style="display:block;padding:.45em .75em;border-bottom:1px solid var(--dsh-code-frame-border,rgb(127 127 127 / 20%));font-weight:500">${escapeHtml(request.fileName)}</span>`
 
     return {
       html: `<pre class="shiki dsh-code-frame-render" style="margin:0;overflow:auto;color:var(--shiki-foreground);background-color:var(--shiki-background);font:var(--dsw-font-markdown-code-block,13px/1.65 monospace)" tabindex="0"><code>${header}${renderedLines}</code></pre>`,

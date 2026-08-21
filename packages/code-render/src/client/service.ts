@@ -46,7 +46,7 @@ export class HtmlCodeRenderer implements CodeRendererService {
   render(request: SyntaxHighlightRequest): CodeRenderResult {
     const result = this.syntaxHighlighter.highlight(request)
     return {
-      html: `<pre class="shiki dsh-code-render" style="background-color:var(--shiki-background);color:var(--shiki-foreground)" tabindex="0"><code>${renderLines(result.lines, result.lineEndings)}</code></pre>`,
+      html: `<pre class="shiki dsh-code-render" style="margin:0;padding:.75em 1em;overflow:auto;color:var(--shiki-foreground);background-color:var(--shiki-background);font:var(--dsw-font-markdown-code-block,13px/1.65 monospace)" tabindex="0"><code>${renderLines(result.lines, result.lineEndings)}</code></pre>`,
       language: result.language,
       highlighted: result.highlighted,
     }

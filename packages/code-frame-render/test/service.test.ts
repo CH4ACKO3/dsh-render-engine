@@ -42,6 +42,8 @@ test('renders escaped source context and diagnostic messages', () => {
   assert.match(result.html, /&lt;unsafe&gt;/)
   assert.match(result.html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
   assert.match(result.html, /dsh-code-frame-error/)
+  assert.match(result.html, /font-weight:500/)
+  assert.doesNotMatch(result.html, /<b>/)
   assert.doesNotMatch(result.html, /<script>/)
   assert.doesNotMatch(result.html, /data-line="4"/)
 })

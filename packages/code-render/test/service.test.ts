@@ -31,6 +31,7 @@ test('renders safe theme-aware HTML', () => {
   assert.equal(result.highlighted, false)
   assert.match(result.html, /class="shiki dsh-code-render"/)
   assert.match(result.html, /var\(--shiki-background\)/)
+  assert.match(result.html, /padding:\.75em 1em/)
   assert.match(result.html, /&lt;script&gt;alert\(&quot;x&quot;\)&lt;\/script&gt; &amp; done/)
   assert.doesNotMatch(result.html, /<script>/)
 })

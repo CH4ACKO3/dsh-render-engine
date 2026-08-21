@@ -25,7 +25,8 @@
     "build": "pnpm run build:client && pnpm run build:host",
     "build:client": "tsdown --config-loader unrun && tsc -p tsconfig.client.build.json",
     "build:host": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
   "engines": {
     "node": "^22.22.3 || >=24.11.1"
@@ -50,6 +51,7 @@
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-conversation",
         "@ch4acko3/dsh-ansi-render",
         "@ch4acko3/dsh-code-frame-render",
         "@ch4acko3/dsh-diff-engine",
@@ -63,7 +65,11 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.8"
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.8",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.8",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.8",
+    "@deepseek-ai/dsh-commands": "0.1.0-rc.8",
+    "react": "^18.2.0"
   },
   "dependencies": {
     "@ch4acko3/dsh-ansi-render": "workspace:*",
@@ -73,6 +79,13 @@
     "@ch4acko3/dsh-diff-render": "workspace:*",
     "@ch4acko3/dsh-shiki": "workspace:*",
     "@ch4acko3/dsh-syntax-highlight": "workspace:*"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.8",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.8",
+    "@deepseek-ai/dsh-commands": "0.1.0-rc.8",
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0"
   },
   "license": "MIT"
 }

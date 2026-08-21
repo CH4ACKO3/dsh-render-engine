@@ -134,7 +134,7 @@ function renderFile(file: DiffFile, highlighter: SyntaxHighlighterService): Rend
     ? `<span class="dsh-diff-empty" style="display:block;padding:.5em 1em;opacity:.7">${file.status === 'binary' ? 'Binary files differ' : 'No textual changes'}</span>`
     : ''
   return {
-    html: `<section class="dsh-diff-file" data-status="${file.status}" data-source-completeness="${file.sourceCompleteness}"><header class="dsh-diff-file-header" style="padding:.5em 1em;border-bottom:1px solid var(--dsh-diff-border,rgb(127 127 127 / 25%));font-weight:600">${escapeHtml(path)}</header><pre class="dsh-diff-content" style="margin:0;overflow:auto;font:inherit">${hunks.map(hunk => hunk.html).join('')}${empty}</pre></section>`,
+    html: `<section class="dsh-diff-file" data-status="${file.status}" data-source-completeness="${file.sourceCompleteness}"><header class="dsh-diff-file-header" style="padding:.45em .75em;border-bottom:1px solid var(--dsh-diff-border,rgb(127 127 127 / 20%));font-weight:500">${escapeHtml(path)}</header><pre class="dsh-diff-content" style="margin:0;overflow:auto;font:inherit">${hunks.map(hunk => hunk.html).join('')}${empty}</pre></section>`,
     highlighted: (before?.highlighted ?? false)
       || (after?.highlighted ?? false)
       || hunks.some(hunk => hunk.highlighted),

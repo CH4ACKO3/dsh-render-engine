@@ -433,3 +433,8 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
     style.remove()
   }
 }
+
+export function setPreviewIntegrationPassed(integrationPassed: boolean): void {
+  const status = document.querySelector<HTMLElement>(`#${ROOT_ID} .dre-status`)
+  if (status) status.textContent = integrationPassed ? '服务正常' : '检查失败'
+}

@@ -6,7 +6,8 @@ import type {} from '@ch4acko3/dsh-diff-engine/client'
 import type {} from '@ch4acko3/dsh-diff-render/client'
 import type {} from '@ch4acko3/dsh-shiki/client'
 import type {} from '@ch4acko3/dsh-syntax-highlight/client'
-import { installPreview } from './preview.js'
+import { installedChatRendererCount, installChatRenderers } from './chat-renderers.js'
+import { installPreview, setPreviewIntegrationPassed } from './preview.js'
 
 interface IntegrationResult {
   passed: boolean
@@ -22,10 +23,12 @@ interface IntegrationResult {
   codeFrameEscapedHtml: boolean
   ansiStyled: boolean
   ansiEscapedHtml: boolean
+  chatViewAdaptersInstalled: number
 }
 
 export const name = '@ch4acko3/dsh-render-engine-integration'
 export const inject = [
+  'slots',
   'shiki',
   'syntaxHighlighter',
   'codeRenderer',
@@ -42,6 +45,29 @@ function sourceOf(
   return lines
     .map((line, index) => line.map(token => token.content).join('') + (lineEndings[index] ?? ''))
     .join('')
+}
+
+function renderedContent(html: string): { text: string, containsScript: boolean } {
+  const template = document.createElement('template')
+  template.innerHTML = html
+  return {
+    text: template.content.textContent ?? '',
+    containsScript: template.content.querySelector('script') !== null,
+  }
+}
+
+function rendererServicesPassed(result: IntegrationResult): boolean {
+  return result.language === 'typescript'
+    && result.tokenizedSource === result.highlightedSource
+    && result.fallbackIsPlain
+    && result.escapedHtml
+    && result.themedHtml
+    && result.diffInputKinds
+    && result.diffHighlighted
+    && result.diffEscapedHtml
+    && result.codeFrameEscapedHtml
+    && result.ansiStyled
+    && result.ansiEscapedHtml
 }
 
 export function apply(ctx: ClientContext): void {
@@ -80,7 +106,8 @@ export function apply(ctx: ClientContext): void {
   const renderedAnsi = ctx.ansiRenderer.render({
     text: '\u001b[1;31mERROR\u001b[0m <script>alert(1)</script>',
   })
-
+  const diffContent = renderedContent(renderedDiff.html)
+  const frameContent = renderedContent(renderedFrame.html)
   const result: IntegrationResult = {
     passed: false,
     language: highlighted.language ?? '',
@@ -93,29 +120,34 @@ export function apply(ctx: ClientContext): void {
       && fragmentsDiff.files.length === 1
       && patchDiff.files.length === 1,
     diffHighlighted: renderedDiff.highlighted,
-    diffEscapedHtml: renderedDiff.html.includes('&lt;script&gt;') && !renderedDiff.html.includes('<script>'),
-    codeFrameEscapedHtml: renderedFrame.html.includes('&lt;unsafe&gt;')
-      && renderedFrame.html.includes('&lt;unsafe diagnostic&gt;')
-      && !renderedFrame.html.includes('<sample.ts>'),
+    diffEscapedHtml: diffContent.text.includes('const value = <script>') && !diffContent.containsScript,
+    codeFrameEscapedHtml: frameContent.text.includes('<unsafe>')
+      && frameContent.text.includes('<unsafe diagnostic>')
+      && frameContent.text.includes('<sample.ts>')
+      && !frameContent.containsScript,
     ansiStyled: renderedAnsi.styled,
     ansiEscapedHtml: renderedAnsi.html.includes('&lt;script&gt;') && !renderedAnsi.html.includes('<script>'),
+    chatViewAdaptersInstalled: 0,
   }
-  result.passed = result.language === 'typescript'
-    && result.tokenizedSource === source
-    && result.highlightedSource === source
-    && result.fallbackIsPlain
-    && result.escapedHtml
-    && result.themedHtml
-    && result.diffInputKinds
-    && result.diffHighlighted
-    && result.diffEscapedHtml
-    && result.codeFrameEscapedHtml
-    && result.ansiStyled
-    && result.ansiEscapedHtml
 
-  document.documentElement.dataset.dshRenderEngineIntegration = JSON.stringify(result)
-  console.info('[dsh-render-engine:integration]', JSON.stringify(result))
-  if (!result.passed) throw new Error('DSH Render Engine integration probe failed')
+  const publishResult = () => {
+    result.chatViewAdaptersInstalled = installedChatRendererCount(ctx)
+    result.passed = rendererServicesPassed(result)
+      && result.tokenizedSource === source
+      && result.highlightedSource === source
+      && result.chatViewAdaptersInstalled === 4
+    document.documentElement.dataset.dshRenderEngineIntegration = JSON.stringify(result)
+    setPreviewIntegrationPassed(result.passed)
+    console.info('[dsh-render-engine:integration]', JSON.stringify(result))
+  }
+
+  ctx.effect(
+    () => ctx.slots.subscribe('conversation.chat.commandview', publishResult),
+    'dsh-render-engine: integration slot probe',
+  )
+  installChatRenderers(ctx)
+  publishResult()
+  if (!rendererServicesPassed(result)) throw new Error('DSH Render Engine integration probe failed')
 
   ctx.effect(() => installPreview(ctx, result.passed), 'dsh-render-engine: preview')
 }

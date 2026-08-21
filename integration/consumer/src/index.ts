@@ -43,6 +43,34 @@ const DEMO_ANSI = `\u001b[1;36mDSH Render Engine\u001b[0m \u001b[2mvalidation\u0
 \u001b[33m⚠\u001b[0m 1 optional dependency skipped
 \u001b[31m✗\u001b[0m example deployment blocked`
 
+const DEMO_MARKDOWN = `# Release readiness
+
+Inline math: $e^{i\\pi} + 1 = 0$.
+
+$$
+\\sum_{n=1}^{\\infty} \\frac{1}{n^2}
+$$
+
+- [x] Build
+- [x] Test
+- [ ] Publish
+
+| Package | Status |
+| --- | --- |
+| Markdown renderer | **Ready** |
+
+\`\`\`ts
+const renderer = 'shared'
+\`\`\`
+
+\`\`\`mermaid
+graph LR
+  Markdown --> Renderers
+  Renderers --> SVG
+  Renderers --> MathML
+\`\`\`
+`
+
 const DEMO_PATCH = `diff --git a/src/greeting.ts b/src/greeting.ts
 index 34ddf2a..64c809f 100644
 --- a/src/greeting.ts
@@ -84,6 +112,12 @@ export function apply(ctx: Context): () => void {
       description: 'Show the DSH Diff Render ChatView fixture',
       recordInput: false,
       handler: () => ({ kind: 'success', text: DEMO_PATCH }),
+    }),
+    ctx.commands.register({
+      name: 'markdowndemo',
+      description: 'Show the DSH Markdown Render ChatView fixture',
+      recordInput: false,
+      handler: () => ({ kind: 'success', text: DEMO_MARKDOWN }),
     }),
   ]
   return () => dispose.reverse().forEach(disposeCommand => disposeCommand())

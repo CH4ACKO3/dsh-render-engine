@@ -14,6 +14,9 @@ const packageDirectories = {
   'dsh-diff-engine': 'packages/diff-engine',
   'dsh-syntax-highlight': 'packages/syntax-highlight',
   'dsh-code-render': 'packages/code-render',
+  'dsh-markdown-render': 'packages/markdown-render',
+  'dsh-mermaid-render': 'packages/mermaid-render',
+  'dsh-math-render': 'packages/math-render',
   'dsh-code-frame-render': 'packages/code-frame-render',
   'dsh-diff-render': 'packages/diff-render',
 }

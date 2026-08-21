@@ -2,11 +2,11 @@
 
 [English](./README.md) | 简体中文
 
-一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、归一化 Diff、诊断代码框、ANSI 终端输出和安全 HTML 渲染拆分为七个可以独立发布的 npm 包。
+一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、Markdown、Mermaid 图表、TeX 数学公式、归一化 Diff、诊断代码框、ANSI 终端输出和安全 HTML 渲染拆分为十个可以独立发布的 npm 包。
 
 ## 提供渲染服务，而不是具体前端
 
-七个公开包**不会**附带页面、面板、ChatView 卡片或其他具体前端。它们注册 `ctx.codeRenderer`、`ctx.diffRenderer`、`ctx.ansiRenderer` 等可复用的浏览器端 Cordis 服务。下游插件自行决定承载界面和交互方式，将自己的数据交给这些服务，并取得可以嵌入目标界面的归一化结构、稳定 token，或经过转义且响应主题的 HTML。
+十个公开包**不会**附带页面、面板、ChatView 卡片或其他具体前端。它们注册 `ctx.codeRenderer`、`ctx.markdownRenderer`、`ctx.mermaidRenderer`、`ctx.mathRenderer`、`ctx.diffRenderer` 等可复用的浏览器端 Cordis 服务。下游插件自行决定承载界面和交互方式，将自己的数据交给这些服务，并取得可以嵌入目标界面的归一化结构、稳定 token、SVG、MathML，或经过转义且响应主题的 HTML。
 
 下方展示的 ChatView 卡片只属于私有的 `integration/consumer`。它们用于演示公开服务的一种接入方式，并不是随公开渲染器包发布的 UI。
 
@@ -39,6 +39,9 @@ ANSI 控制序列被解释为可读的终端颜色和强调样式，同时保持
 | `@ch4acko3/dsh-shiki` | `ctx.shiki` | 管理一个共享的 Shiki 引擎和内置语言集合。 |
 | `@ch4acko3/dsh-syntax-highlight` | `ctx.syntaxHighlighter` | 将源码转换为稳定、响应主题的 token；无法识别语言时回退为纯文本。 |
 | `@ch4acko3/dsh-code-render` | `ctx.codeRenderer` | 将高亮 token 转换为经过转义的 HTML 代码块。 |
+| `@ch4acko3/dsh-markdown-render` | `ctx.markdownRenderer` | 将不受信任的 GFM 渲染为经过清洗、响应主题的 HTML，并把代码围栏交给 `ctx.codeRenderer`。 |
+| `@ch4acko3/dsh-mermaid-render` | `ctx.mermaidRenderer` | 将不受信任的 Mermaid 定义渲染为经过清洗的 SVG。 |
+| `@ch4acko3/dsh-math-render` | `ctx.mathRenderer` | 使用 KaTeX 将 TeX 表达式渲染为可访问的原生 MathML。 |
 | `@ch4acko3/dsh-code-frame-render` | `ctx.codeFrameRenderer` | 渲染带诊断范围和消息的源码上下文。 |
 | `@ch4acko3/dsh-diff-engine` | `ctx.diffEngine` | 将完整文件快照、DSH 文件差异和 unified patch 归一化为统一文档。 |
 | `@ch4acko3/dsh-diff-render` | `ctx.diffRenderer` | 将归一化 Diff 渲染为经过转义并带源码语法高亮的 HTML。 |
@@ -48,13 +51,18 @@ ANSI 控制序列被解释为可读的终端颜色和强调样式，同时保持
 
 ```text
 dsh-code-render -------+--> dsh-syntax-highlight --> dsh-shiki
+dsh-markdown-render -----> dsh-code-render
+        + - - 可选 -----> dsh-mermaid-render
+        + - - 可选 -----> dsh-math-render
 dsh-code-frame-render -+
 dsh-diff-render ---------> dsh-diff-engine
         +-----------------> dsh-syntax-highlight
 dsh-ansi-render             （独立）
+dsh-mermaid-render          （独立）
+dsh-math-render             （独立）
 ```
 
-仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的七个包计划对外发布。
+仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的十个包计划对外发布。
 
 ## 功能
 
@@ -64,6 +72,9 @@ dsh-ansi-render             （独立）
 - 使用 CSS 变量输出颜色，跟随 DSH 主题。
 - 语言未提供或不受支持时自动回退为纯文本。
 - 生成 HTML 时转义源码内容。
+- 安全渲染 GitHub Flavored Markdown：原始 HTML 作为文本显示，代码围栏复用共享代码渲染器。
+- 使用 Mermaid 严格安全设置生成并再次清洗 SVG 图表。
+- 将 TeX 渲染为原生 MathML，无需额外样式表或字体文件。
 - 显式支持完整文件、DSH `FileDiff` 片段、unified 或 Git patch 三种 Diff 输入。
 - 使用一个稳定 Diff 文档表达文件、hunk、行、状态、源码完整度和统计信息。
 - 在增删、上下文和元数据行的语义样式上叠加源码语言 token 颜色。
@@ -116,6 +127,25 @@ const highlighted = ctx.syntaxHighlighter.highlight({ code, language: 'ts' })
 
 `ctx.shiki.tokenize()` 要求传入受支持的语言。`ctx.syntaxHighlighter.highlight()` 和 `ctx.codeRenderer.render()` 可以接收缺失或未知的语言，并返回未高亮的纯文本结果。
 
+不绑定具体 ChatView 或文件浏览器，直接渲染不受信任的 Markdown：
+
+```ts
+const renderedMarkdown = await ctx.markdownRenderer.render({
+  markdown: '# Result\n\n```ts\nconst answer = 42\n```',
+})
+
+console.log(renderedMarkdown.html)
+```
+
+Markdown 服务支持 GFM 表格、任务列表、删除线、行内 `$…$`、块级 `$$…$$`，以及 `math`/`latex`/`tex`/`katex` 围栏。它会把原始 HTML 显示为文本，清洗生成的链接与图片，并将普通代码围栏交给 `ctx.codeRenderer`。渲染时动态检查 `ctx.get('mermaidRenderer')` 和 `ctx.get('mathRenderer')`：可选服务存在就升级，不存在就保留可读的源码回退；Markdown 包本身不依赖 Mermaid 或 KaTeX。
+
+不经过 Markdown 时，也可以直接调用可选富内容渲染器：
+
+```ts
+const diagram = await ctx.mermaidRenderer.render({ source: 'graph TD\n  A --> B' })
+const formula = ctx.mathRenderer.render({ source: String.raw`e^{i\pi} + 1 = 0` })
+```
+
 完整文件、DSH 文件差异片段和 unified patch 都会归一化为相同文档，再交给同一个 renderer：
 
 ```ts
@@ -157,7 +187,7 @@ Code Frame 位置使用零基 UTF-16 code unit 偏移。Renderer 不查找源码
 
 ## 本地 DSH 预览
 
-先构建 workspace，再将七个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
+先构建 workspace，再将十个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
 
 ```sh
 pnpm build
@@ -165,6 +195,9 @@ pnpm build
 dsh plugin --profile web add "file:$PWD/packages/shiki"
 dsh plugin --profile web add "file:$PWD/packages/syntax-highlight"
 dsh plugin --profile web add "file:$PWD/packages/code-render"
+dsh plugin --profile web add "file:$PWD/packages/mermaid-render"
+dsh plugin --profile web add "file:$PWD/packages/math-render"
+dsh plugin --profile web add "file:$PWD/packages/markdown-render"
 dsh plugin --profile web add "file:$PWD/packages/code-frame-render"
 dsh plugin --profile web add "file:$PWD/packages/diff-engine"
 dsh plugin --profile web add "file:$PWD/packages/diff-render"
@@ -173,7 +206,7 @@ dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化 token 和转义后的 HTML 之间切换。在 ChatView 中运行 `/codedemo`、`/framedemo`、`/ansidemo` 或 `/renderdemo`，可以通过原生命令插槽验证同一组服务。integration consumer 仅用于本地验证，不应发布。
+打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化 token 和转义后的 HTML 之间切换。在 ChatView 中运行 `/codedemo`、`/markdowndemo`、`/framedemo`、`/ansidemo` 或 `/renderdemo`，可以通过原生命令插槽验证同一组服务。integration consumer 仅用于本地验证，不应发布。
 
 ## 仓库结构
 
@@ -182,6 +215,9 @@ packages/
   shiki/              共享 Shiki 引擎
   syntax-highlight/   稳定的高亮 token 服务
   code-render/        安全 HTML 渲染器
+  markdown-render/    经过清洗的 GFM 渲染器
+  mermaid-render/     经过清洗的 Mermaid SVG 渲染器
+  math-render/        KaTeX MathML 渲染器
   code-frame-render/  诊断源码上下文渲染器
   diff-engine/        多输入归一化 Diff 引擎
   diff-render/        带语法高亮的 HTML Diff 渲染器
@@ -200,7 +236,7 @@ GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishi
 2. 等待该提交的 CI 通过。
 3. 创建并推送与包版本一致的包 Tag，例如 `dsh-code-render@0.2.0`。
 
-每个 Tag 只发布其中指定的包，因此七个包可以使用不同版本。稳定版 Tag 会发布到 npm `latest`；`dsh-code-render@0.2.0-next.0` 之类的预发布 Tag 会发布到 npm `next`。正式发布前，工作流会拒绝未知包、格式错误的 Tag、不在 `main` 上的 Tag 提交、包版本与 Tag 不一致，以及 npm 上已经存在的版本。
+每个 Tag 只发布其中指定的包，因此十个包可以使用不同版本。稳定版 Tag 会发布到 npm `latest`；`dsh-code-render@0.2.0-next.0` 之类的预发布 Tag 会发布到 npm `next`。正式发布前，工作流会拒绝未知包、格式错误的 Tag、不在 `main` 上的 Tag 提交、包版本与 Tag 不一致，以及 npm 上已经存在的版本。
 
 ## 许可证
 

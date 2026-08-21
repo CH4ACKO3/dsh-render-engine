@@ -1,0 +1,88 @@
+{
+  "name": "@ch4acko3/dsh-math-render",
+  "version": "0.1.0",
+  "description": "KaTeX MathML rendering service for DeepSeek Harness Web plugins",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "pnpm run build:client && pnpm run build:host",
+    "build:client": "tsdown --config-loader unrun && tsc -p tsconfig.client.build.json",
+    "build:host": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
+    "prepack": "pnpm run build"
+  },
+  "engines": {
+    "node": "^22.22.3 || >=24.11.1"
+  },
+  "dsh": {
+    "plugin": {
+      "schemaVersion": 1,
+      "displayName": {
+        "en": "Math Render",
+        "zh-CN": "数学公式渲染"
+      },
+      "summary": {
+        "en": "Renders TeX expressions as accessible native MathML with KaTeX.",
+        "zh-CN": "使用 KaTeX 将 TeX 表达式渲染为可访问的原生 MathML。"
+      },
+      "category": "development"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.8"
+  },
+  "dependencies": {
+    "katex": "^0.18.4"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.3",
+    "jsdom": "^29.1.1"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "katex",
+    "tex",
+    "mathml"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CH4ACKO3/dsh-render-engine.git",
+    "directory": "packages/math-render"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

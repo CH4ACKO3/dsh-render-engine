@@ -56,6 +56,9 @@
         "@ch4acko3/dsh-code-frame-render",
         "@ch4acko3/dsh-diff-engine",
         "@ch4acko3/dsh-diff-render",
+        "@ch4acko3/dsh-markdown-render",
+        "@ch4acko3/dsh-math-render",
+        "@ch4acko3/dsh-mermaid-render",
         "@ch4acko3/dsh-shiki",
         "@ch4acko3/dsh-syntax-highlight",
         "@ch4acko3/dsh-code-render"
@@ -77,6 +80,9 @@
     "@ch4acko3/dsh-code-render": "workspace:*",
     "@ch4acko3/dsh-diff-engine": "workspace:*",
     "@ch4acko3/dsh-diff-render": "workspace:*",
+    "@ch4acko3/dsh-markdown-render": "workspace:*",
+    "@ch4acko3/dsh-math-render": "workspace:*",
+    "@ch4acko3/dsh-mermaid-render": "workspace:*",
     "@ch4acko3/dsh-shiki": "workspace:*",
     "@ch4acko3/dsh-syntax-highlight": "workspace:*"
   },

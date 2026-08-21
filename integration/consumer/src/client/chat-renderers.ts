@@ -6,16 +6,22 @@ import type { CodeFrameRenderRequest } from '@ch4acko3/dsh-code-frame-render/cli
 import type {} from '@ch4acko3/dsh-code-render/client'
 import type {} from '@ch4acko3/dsh-diff-engine/client'
 import type {} from '@ch4acko3/dsh-diff-render/client'
-import { createElement } from 'react'
+import type {} from '@ch4acko3/dsh-markdown-render/client'
+import { createElement, useEffect, useState } from 'react'
 
 type CommandProps = PropsRuntime<'conversation.chat.commandview'>
 type DiffProps = CommandProps & Pick<ClientContext, 'diffEngine' | 'diffRenderer'>
 type CodeProps = CommandProps & Pick<ClientContext, 'codeRenderer'>
 type CodeFrameProps = CommandProps & Pick<ClientContext, 'codeFrameRenderer'>
 type AnsiProps = CommandProps & Pick<ClientContext, 'ansiRenderer'>
+type MarkdownProps = CommandProps & Pick<ClientContext, 'markdownRenderer'>
 type CommandOutcome = CommandProps['node']['outcome']
+type MarkdownRenderState =
+  | { kind: 'loading' }
+  | { kind: 'ready', html: string }
+  | { kind: 'error', error: unknown }
 
-const CHAT_RENDERER_KEYS = ['codedemo', 'framedemo', 'ansidemo', 'renderdemo'] as const
+const CHAT_RENDERER_KEYS = ['codedemo', 'framedemo', 'ansidemo', 'renderdemo', 'markdowndemo'] as const
 
 export type CommandOutput =
   | { kind: 'running' | 'error' | 'empty', text: string }
@@ -130,6 +136,37 @@ function RenderDiffCard({ node, diffEngine, diffRenderer }: DiffProps) {
   }
 }
 
+function RenderMarkdownReadyCard({ markdown, markdownRenderer }: { markdown: string, markdownRenderer: MarkdownProps['markdownRenderer'] }) {
+  const [state, setState] = useState<MarkdownRenderState>({ kind: 'loading' })
+
+  useEffect(() => {
+    let active = true
+    markdownRenderer.render({ markdown }).then(
+      rendered => active && setState({ kind: 'ready', html: rendered.html }),
+      error => active && setState({ kind: 'error', error }),
+    )
+    return () => {
+      active = false
+    }
+  }, [markdown, markdownRenderer])
+
+  if (state.kind === 'loading') {
+    return renderCommandState({ kind: 'running', text: 'Rendering /markdowndemo…' })
+  }
+  if (state.kind === 'error') return renderFailure('/markdowndemo', state.error)
+  return renderCard('/markdowndemo', 'GFM', 'Markdown rendered by DSH Render Engine', state.html)
+}
+
+function RenderMarkdownCard({ node, markdownRenderer }: MarkdownProps) {
+  const output = resolveCommandOutput('/markdowndemo', node.outcome)
+  if (output.kind !== 'ready') return renderCommandState(output)
+  return createElement(RenderMarkdownReadyCard, {
+    key: output.text,
+    markdown: output.text,
+    markdownRenderer,
+  })
+}
+
 export function installChatRenderers(ctx: ClientContext): void {
   ctx.slots.inject('conversation.chat.commandview', () => ctx.slots.register({
     name: 'conversation.chat.commandview',
@@ -154,6 +191,11 @@ export function installChatRenderers(ctx: ClientContext): void {
       diffRenderer: ctx.diffRenderer,
     }),
   }, RenderDiffCard))
+  ctx.slots.inject('conversation.chat.commandview', () => ctx.slots.register({
+    name: 'conversation.chat.commandview',
+    key: 'markdowndemo',
+    inject: () => ({ markdownRenderer: ctx.markdownRenderer }),
+  }, RenderMarkdownCard))
 }
 
 export function installedChatRendererCount(ctx: ClientContext): number {

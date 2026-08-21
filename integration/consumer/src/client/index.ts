@@ -4,6 +4,9 @@ import type {} from '@ch4acko3/dsh-code-frame-render/client'
 import type {} from '@ch4acko3/dsh-code-render/client'
 import type {} from '@ch4acko3/dsh-diff-engine/client'
 import type {} from '@ch4acko3/dsh-diff-render/client'
+import type {} from '@ch4acko3/dsh-markdown-render/client'
+import type {} from '@ch4acko3/dsh-math-render/client'
+import type {} from '@ch4acko3/dsh-mermaid-render/client'
 import type {} from '@ch4acko3/dsh-shiki/client'
 import type {} from '@ch4acko3/dsh-syntax-highlight/client'
 import { installedChatRendererCount, installChatRenderers } from './chat-renderers.js'
@@ -23,6 +26,10 @@ interface IntegrationResult {
   codeFrameEscapedHtml: boolean
   ansiStyled: boolean
   ansiEscapedHtml: boolean
+  markdownHighlighted: boolean
+  markdownEscapedHtml: boolean
+  mathRendered: boolean
+  mermaidRendered: boolean
   chatViewAdaptersInstalled: number
 }
 
@@ -36,6 +43,9 @@ export const inject = [
   'diffEngine',
   'diffRenderer',
   'ansiRenderer',
+  'mathRenderer',
+  'mermaidRenderer',
+  'markdownRenderer',
 ] as const
 
 function sourceOf(
@@ -68,9 +78,13 @@ function rendererServicesPassed(result: IntegrationResult): boolean {
     && result.codeFrameEscapedHtml
     && result.ansiStyled
     && result.ansiEscapedHtml
+    && result.markdownHighlighted
+    && result.markdownEscapedHtml
+    && result.mathRendered
+    && result.mermaidRendered
 }
 
-export function apply(ctx: ClientContext): void {
+export async function apply(ctx: ClientContext): Promise<void> {
   const source = 'const answer: number = 42\r\nconst ready = true\r\n'
   const raw = ctx.shiki.tokenize({ code: source, language: 'ts' })
   const highlighted = ctx.syntaxHighlighter.highlight({ code: source, language: 'ts' })
@@ -106,8 +120,12 @@ export function apply(ctx: ClientContext): void {
   const renderedAnsi = ctx.ansiRenderer.render({
     text: '\u001b[1;31mERROR\u001b[0m <script>alert(1)</script>',
   })
+  const renderedMarkdown = await ctx.markdownRenderer.render({
+    markdown: '# Safe\n\n```ts\nconst value = 42\n```\n\n```mermaid\ngraph TD\n  Parse --> Render\n```\n\nEuler: $e^{i\\pi} + 1 = 0$.\n\n<script>alert(1)</script>',
+  })
   const diffContent = renderedContent(renderedDiff.html)
   const frameContent = renderedContent(renderedFrame.html)
+  const markdownContent = renderedContent(renderedMarkdown.html)
   const result: IntegrationResult = {
     passed: false,
     language: highlighted.language ?? '',
@@ -127,6 +145,14 @@ export function apply(ctx: ClientContext): void {
       && !frameContent.containsScript,
     ansiStyled: renderedAnsi.styled,
     ansiEscapedHtml: renderedAnsi.html.includes('&lt;script&gt;') && !renderedAnsi.html.includes('<script>'),
+    markdownHighlighted: renderedMarkdown.html.includes('dsh-code-render')
+      && renderedMarkdown.html.includes('var(--shiki-token-keyword)'),
+    markdownEscapedHtml: markdownContent.text.includes('<script>alert(1)</script>')
+      && !markdownContent.containsScript,
+    mathRendered: renderedMarkdown.html.includes('dsh-math-render')
+      && renderedMarkdown.html.includes('<math'),
+    mermaidRendered: renderedMarkdown.html.includes('dsh-mermaid-render')
+      && renderedMarkdown.html.includes('<svg'),
     chatViewAdaptersInstalled: 0,
   }
 
@@ -135,7 +161,7 @@ export function apply(ctx: ClientContext): void {
     result.passed = rendererServicesPassed(result)
       && result.tokenizedSource === source
       && result.highlightedSource === source
-      && result.chatViewAdaptersInstalled === 4
+      && result.chatViewAdaptersInstalled === 5
     document.documentElement.dataset.dshRenderEngineIntegration = JSON.stringify(result)
     setPreviewIntegrationPassed(result.passed)
     console.info('[dsh-render-engine:integration]', JSON.stringify(result))

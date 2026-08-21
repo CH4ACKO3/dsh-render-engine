@@ -2,11 +2,11 @@
 
 English | [简体中文](./README.zh-CN.md)
 
-A small monorepo of browser-side rendering services for DeepSeek Harness Web plugins. It separates Shiki tokenization, stable syntax-highlight tokens, normalized diffs, diagnostic code frames, ANSI terminal output, and safe HTML rendering into seven independently publishable npm packages.
+A small monorepo of browser-side rendering services for DeepSeek Harness Web plugins. It separates Shiki tokenization, stable syntax-highlight tokens, Markdown, Mermaid diagrams, TeX math, normalized diffs, diagnostic code frames, ANSI terminal output, and safe HTML rendering into ten independently publishable npm packages.
 
 ## Renderer services, not a frontend
 
-The seven published packages do **not** ship a page, panel, ChatView card, or other concrete frontend. They register reusable browser-side Cordis services such as `ctx.codeRenderer`, `ctx.diffRenderer`, and `ctx.ansiRenderer`. A downstream plugin chooses the host surface and interaction, calls the services with its own data, and receives normalized structures, stable tokens, or escaped theme-aware HTML that it can embed in that surface.
+The ten published packages do **not** ship a page, panel, ChatView card, or other concrete frontend. They register reusable browser-side Cordis services such as `ctx.codeRenderer`, `ctx.markdownRenderer`, `ctx.mermaidRenderer`, `ctx.mathRenderer`, and `ctx.diffRenderer`. A downstream plugin chooses the host surface and interaction, calls the services with its own data, and receives normalized structures, stable tokens, SVG, MathML, or escaped theme-aware HTML that it can embed in that surface.
 
 The ChatView cards shown below belong only to the private `integration/consumer`. They demonstrate one possible adapter built on the public services; they are not UI bundled with the published renderer packages.
 
@@ -39,6 +39,9 @@ ANSI control sequences are interpreted into readable terminal color and emphasis
 | `@ch4acko3/dsh-shiki` | `ctx.shiki` | Owns one shared Shiki engine and the bundled language set. |
 | `@ch4acko3/dsh-syntax-highlight` | `ctx.syntaxHighlighter` | Converts source code into stable, theme-aware tokens with a plain-text fallback. |
 | `@ch4acko3/dsh-code-render` | `ctx.codeRenderer` | Converts highlight tokens into escaped HTML code blocks. |
+| `@ch4acko3/dsh-markdown-render` | `ctx.markdownRenderer` | Renders untrusted GFM as sanitized, theme-aware HTML and delegates fenced code to `ctx.codeRenderer`. |
+| `@ch4acko3/dsh-mermaid-render` | `ctx.mermaidRenderer` | Renders untrusted Mermaid definitions as sanitized SVG. |
+| `@ch4acko3/dsh-math-render` | `ctx.mathRenderer` | Renders TeX expressions as accessible native MathML with KaTeX. |
 | `@ch4acko3/dsh-code-frame-render` | `ctx.codeFrameRenderer` | Renders source context with diagnostic ranges and messages. |
 | `@ch4acko3/dsh-diff-engine` | `ctx.diffEngine` | Normalizes complete file snapshots, DSH file diffs, and unified patches into one structured document. |
 | `@ch4acko3/dsh-diff-render` | `ctx.diffRenderer` | Renders normalized diffs as escaped HTML with source-language highlighting. |
@@ -48,13 +51,18 @@ The dependency direction is intentionally one-way:
 
 ```text
 dsh-code-render -------+--> dsh-syntax-highlight --> dsh-shiki
+dsh-markdown-render -----> dsh-code-render
+        + - - optional --> dsh-mermaid-render
+        + - - optional --> dsh-math-render
 dsh-code-frame-render -+
 dsh-diff-render ---------> dsh-diff-engine
         +-----------------> dsh-syntax-highlight
 dsh-ansi-render             (standalone)
+dsh-mermaid-render          (standalone)
+dsh-math-render             (standalone)
 ```
 
-The repository root and `integration/consumer` are private. Only the seven packages under `packages/` are intended for publication.
+The repository root and `integration/consumer` are private. Only the ten packages under `packages/` are intended for publication.
 
 ## Features
 
@@ -64,6 +72,9 @@ The repository root and `integration/consumer` are private. Only the seven packa
 - CSS-variable colors that follow the DSH theme.
 - Plain-text fallback for an absent or unsupported language hint.
 - Escaped source text in the generated HTML.
+- Sanitized GitHub Flavored Markdown with raw HTML rendered as text and fenced code delegated to the shared code renderer.
+- Sanitized Mermaid SVG rendering with strict Mermaid security settings.
+- TeX rendering as native MathML without stylesheet or font-file requirements.
 - Three explicit diff inputs: complete files, DSH `FileDiff` fragments, and unified or Git patches.
 - One stable diff document with file, hunk, line, status, source-completeness, and summary data.
 - Source-language token colors layered over semantic addition, deletion, context, and metadata rows.
@@ -116,6 +127,25 @@ const highlighted = ctx.syntaxHighlighter.highlight({ code, language: 'ts' })
 
 `ctx.shiki.tokenize()` requires a supported language. `ctx.syntaxHighlighter.highlight()` and `ctx.codeRenderer.render()` accept an absent or unknown language and return a non-highlighted plain-text result.
 
+Render untrusted Markdown without binding the renderer to a particular ChatView or file browser:
+
+```ts
+const renderedMarkdown = await ctx.markdownRenderer.render({
+  markdown: '# Result\n\n```ts\nconst answer = 42\n```',
+})
+
+console.log(renderedMarkdown.html)
+```
+
+The Markdown service supports GFM tables, task lists, strikethrough, inline `$…$` math, `$$…$$` display math, and `math`/`latex`/`tex`/`katex` fences. It displays raw HTML as text, sanitizes generated links and images, and sends ordinary fenced code through `ctx.codeRenderer`. At render time it uses `ctx.get('mermaidRenderer')` and `ctx.get('mathRenderer')` when those optional services exist; missing services leave readable code or source fallbacks. The Markdown package depends on neither Mermaid nor KaTeX.
+
+Use the optional rich renderers directly when Markdown is not involved:
+
+```ts
+const diagram = await ctx.mermaidRenderer.render({ source: 'graph TD\n  A --> B' })
+const formula = ctx.mathRenderer.render({ source: String.raw`e^{i\pi} + 1 = 0` })
+```
+
 Normalize and render complete files, DSH file-diff fragments, or a unified patch through the same document format:
 
 ```ts
@@ -157,7 +187,7 @@ Code-frame positions use zero-based UTF-16 code-unit offsets. The renderer perfo
 
 ## Local DSH preview
 
-Build the workspace, add the seven services and the private preview consumer to a DSH Web profile, then start DSH Web:
+Build the workspace, add the ten services and the private preview consumer to a DSH Web profile, then start DSH Web:
 
 ```sh
 pnpm build
@@ -165,6 +195,9 @@ pnpm build
 dsh plugin --profile web add "file:$PWD/packages/shiki"
 dsh plugin --profile web add "file:$PWD/packages/syntax-highlight"
 dsh plugin --profile web add "file:$PWD/packages/code-render"
+dsh plugin --profile web add "file:$PWD/packages/mermaid-render"
+dsh plugin --profile web add "file:$PWD/packages/math-render"
+dsh plugin --profile web add "file:$PWD/packages/markdown-render"
 dsh plugin --profile web add "file:$PWD/packages/code-frame-render"
 dsh plugin --profile web add "file:$PWD/packages/diff-engine"
 dsh plugin --profile web add "file:$PWD/packages/diff-render"
@@ -173,7 +206,7 @@ dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-Open the URL printed by `dsh web`. The preview overlay lets you edit source code, choose a language, and switch between code, code-frame, diff, ANSI, token, and escaped HTML outputs. Run `/codedemo`, `/framedemo`, `/ansidemo`, or `/renderdemo` in ChatView to exercise the same services through native command slots. The integration consumer is for local verification only and must not be published.
+Open the URL printed by `dsh web`. The preview overlay lets you edit source code, choose a language, and switch between code, code-frame, diff, ANSI, token, and escaped HTML outputs. Run `/codedemo`, `/markdowndemo`, `/framedemo`, `/ansidemo`, or `/renderdemo` in ChatView to exercise the same services through native command slots. The integration consumer is for local verification only and must not be published.
 
 ## Repository layout
 
@@ -182,6 +215,9 @@ packages/
   shiki/              Shared Shiki engine
   syntax-highlight/   Stable highlight-token service
   code-render/        Safe HTML renderer
+  markdown-render/    Sanitized GFM renderer
+  mermaid-render/     Sanitized Mermaid SVG renderer
+  math-render/        KaTeX MathML renderer
   code-frame-render/  Diagnostic source-context renderer
   diff-engine/        Multi-input normalized diff engine
   diff-render/        Syntax-highlighted HTML diff renderer
@@ -200,7 +236,7 @@ Releases are tag-driven:
 2. Wait for CI to pass on that commit.
 3. Create and push a matching package Tag, for example `dsh-code-render@0.2.0`.
 
-Each Tag publishes only its named package, so the seven packages may use different versions. Stable tags publish to npm `latest`; prerelease tags such as `dsh-code-render@0.2.0-next.0` publish to npm `next`. The workflow rejects unknown packages, malformed tags, tags whose commit is not on `main`, package-version mismatches, and versions that already exist on npm before publishing begins.
+Each Tag publishes only its named package, so the ten packages may use different versions. Stable tags publish to npm `latest`; prerelease tags such as `dsh-code-render@0.2.0-next.0` publish to npm `next`. The workflow rejects unknown packages, malformed tags, tags whose commit is not on `main`, package-version mismatches, and versions that already exist on npm before publishing begins.
 
 ## License
 

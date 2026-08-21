@@ -45,13 +45,13 @@ test('passes successful text to the renderer', () => {
 })
 
 test('counts actual ChatView adapter ledger entries', () => {
-  const entries = ['codedemo', 'framedemo', 'ansidemo', 'renderdemo', 'unrelated']
+  const entries = ['codedemo', 'framedemo', 'ansidemo', 'renderdemo', 'markdowndemo', 'unrelated']
     .map(key => ({ options: { key } }))
   const ctx = {
     slots: { entries: () => entries },
   } as unknown as ClientContext
 
-  assert.equal(installedChatRendererCount(ctx), 4)
+  assert.equal(installedChatRendererCount(ctx), 5)
   entries.splice(2, 1)
-  assert.equal(installedChatRendererCount(ctx), 3)
+  assert.equal(installedChatRendererCount(ctx), 4)
 })

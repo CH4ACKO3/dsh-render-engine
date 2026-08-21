@@ -1,6 +1,6 @@
 # Browser integration test
 
-`consumer` is a private DSH plugin that consumes all five publishable services inside a real browser Cordis runtime.
+`consumer` is a private DSH plugin that consumes all seven publishable services inside a real browser Cordis runtime.
 
 It verifies:
 
@@ -11,6 +11,8 @@ It verifies:
 - Rendered HTML uses DSH's `--shiki-*` theme variables.
 - All three diff input kinds normalize into structured documents.
 - Diff rendering highlights source tokens and escapes untrusted content.
+- Code-frame rendering applies diagnostic ranges and escapes source, file names, and messages.
+- ANSI rendering preserves styles while escaping source HTML.
 
 ## Run in an isolated DSH environment
 
@@ -21,8 +23,10 @@ pnpm check
 dsh plugin --profile web add link:/workspace/packages/shiki
 dsh plugin --profile web add link:/workspace/packages/syntax-highlight
 dsh plugin --profile web add link:/workspace/packages/code-render
+dsh plugin --profile web add link:/workspace/packages/code-frame-render
 dsh plugin --profile web add link:/workspace/packages/diff-engine
 dsh plugin --profile web add link:/workspace/packages/diff-render
+dsh plugin --profile web add link:/workspace/packages/ansi-render
 dsh plugin --profile web add link:/workspace/integration/consumer
 dsh web
 ```

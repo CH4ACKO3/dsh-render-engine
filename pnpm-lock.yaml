@@ -29,6 +29,12 @@ importers:
 
   integration/consumer:
     dependencies:
+      '@ch4acko3/dsh-ansi-render':
+        specifier: workspace:*
+        version: link:../../packages/ansi-render
+      '@ch4acko3/dsh-code-frame-render':
+        specifier: workspace:*
+        version: link:../../packages/code-frame-render
       '@ch4acko3/dsh-code-render':
         specifier: workspace:*
         version: link:../../packages/code-render
@@ -44,6 +50,30 @@ importers:
       '@ch4acko3/dsh-syntax-highlight':
         specifier: workspace:*
         version: link:../../packages/syntax-highlight
+      '@deepseek-ai/cordis':
+        specifier: ^4.0.1
+        version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: 0.1.0-rc.8
+        version: 0.1.0-rc.8(0e60b9f95af714a85e67a98df3af0bfd)
+
+  packages/ansi-render:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: ^4.0.1
+        version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: 0.1.0-rc.8
+        version: 0.1.0-rc.8(0e60b9f95af714a85e67a98df3af0bfd)
+      ansi_up:
+        specifier: ^6.0.6
+        version: 6.0.6
+
+  packages/code-frame-render:
+    dependencies:
+      '@ch4acko3/dsh-syntax-highlight':
+        specifier: workspace:^
+        version: link:../syntax-highlight
       '@deepseek-ai/cordis':
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
@@ -1091,6 +1121,9 @@ packages:
 
   '@yuku-toolchain/types@0.8.7':
     resolution: {integrity: sha512-2Z53dNxAJL6UvFoIrDZvYf3zlO8s4VJK4O2hhaB4mXVwwpX/7ajtss3cmfqKvamlNLWyt9FSWs4eoYdlbxpnHA==}
+
+  ansi_up@6.0.6:
+    resolution: {integrity: sha512-yIa1x3Ecf8jWP4UWEunNjqNX6gzE4vg2gGz+xqRGY+TBSucnYp6RRdPV4brmtg6bQ1ljD48mZ5iGSEj7QEpRKA==}
 
   ansis@4.3.1:
     resolution: {integrity: sha512-BJ8/l4R5LRE7hW9WdSuGYrLSHi2ynxeFpDFbH0K/CgNeY/tyhk+vO6TYxXC5r5CpUhNVX310xzPsN/H9lCdfOA==}
@@ -2238,6 +2271,8 @@ snapshots:
     optional: true
 
   '@yuku-toolchain/types@0.8.7': {}
+
+  ansi_up@6.0.6: {}
 
   ansis@4.3.1: {}
 

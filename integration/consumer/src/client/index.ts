@@ -1,4 +1,6 @@
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@ch4acko3/dsh-ansi-render/client'
+import type {} from '@ch4acko3/dsh-code-frame-render/client'
 import type {} from '@ch4acko3/dsh-code-render/client'
 import type {} from '@ch4acko3/dsh-diff-engine/client'
 import type {} from '@ch4acko3/dsh-diff-render/client'
@@ -17,10 +19,21 @@ interface IntegrationResult {
   diffInputKinds: boolean
   diffHighlighted: boolean
   diffEscapedHtml: boolean
+  codeFrameEscapedHtml: boolean
+  ansiStyled: boolean
+  ansiEscapedHtml: boolean
 }
 
 export const name = '@ch4acko3/dsh-render-engine-integration'
-export const inject = ['shiki', 'syntaxHighlighter', 'codeRenderer', 'diffEngine', 'diffRenderer'] as const
+export const inject = [
+  'shiki',
+  'syntaxHighlighter',
+  'codeRenderer',
+  'codeFrameRenderer',
+  'diffEngine',
+  'diffRenderer',
+  'ansiRenderer',
+] as const
 
 function sourceOf(
   lines: Array<Array<{ content: string }>>,
@@ -51,6 +64,22 @@ export function apply(ctx: ClientContext): void {
     patch: '--- a/sample.ts\n+++ b/sample.ts\n@@ -1 +1 @@\n-const value = 1\n+const value = 2\n',
   })
   const renderedDiff = ctx.diffRenderer.render(filesDiff)
+  const renderedFrame = ctx.codeFrameRenderer.render({
+    code: 'const value = <unsafe>\n',
+    language: 'ts',
+    fileName: '<sample.ts>',
+    diagnostics: [{
+      range: {
+        start: { line: 0, character: 14 },
+        end: { line: 0, character: 22 },
+      },
+      message: '<unsafe diagnostic>',
+      severity: 'error',
+    }],
+  })
+  const renderedAnsi = ctx.ansiRenderer.render({
+    text: '\u001b[1;31mERROR\u001b[0m <script>alert(1)</script>',
+  })
 
   const result: IntegrationResult = {
     passed: false,
@@ -65,6 +94,11 @@ export function apply(ctx: ClientContext): void {
       && patchDiff.files.length === 1,
     diffHighlighted: renderedDiff.highlighted,
     diffEscapedHtml: renderedDiff.html.includes('&lt;script&gt;') && !renderedDiff.html.includes('<script>'),
+    codeFrameEscapedHtml: renderedFrame.html.includes('&lt;unsafe&gt;')
+      && renderedFrame.html.includes('&lt;unsafe diagnostic&gt;')
+      && !renderedFrame.html.includes('<sample.ts>'),
+    ansiStyled: renderedAnsi.styled,
+    ansiEscapedHtml: renderedAnsi.html.includes('&lt;script&gt;') && !renderedAnsi.html.includes('<script>'),
   }
   result.passed = result.language === 'typescript'
     && result.tokenizedSource === source
@@ -75,6 +109,9 @@ export function apply(ctx: ClientContext): void {
     && result.diffInputKinds
     && result.diffHighlighted
     && result.diffEscapedHtml
+    && result.codeFrameEscapedHtml
+    && result.ansiStyled
+    && result.ansiEscapedHtml
 
   document.documentElement.dataset.dshRenderEngineIntegration = JSON.stringify(result)
   console.info('[dsh-render-engine:integration]', JSON.stringify(result))

@@ -2,7 +2,7 @@
 
 [English](./README.md) | 简体中文
 
-一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、归一化 Diff，以及安全的代码和 Diff HTML 渲染拆分为五个可以独立发布的 npm 包。
+一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、归一化 Diff、诊断代码框、ANSI 终端输出和安全 HTML 渲染拆分为七个可以独立发布的 npm 包。
 
 ## 包结构
 
@@ -11,19 +11,22 @@
 | `@ch4acko3/dsh-shiki` | `ctx.shiki` | 管理一个共享的 Shiki 引擎和内置语言集合。 |
 | `@ch4acko3/dsh-syntax-highlight` | `ctx.syntaxHighlighter` | 将源码转换为稳定、响应主题的 token；无法识别语言时回退为纯文本。 |
 | `@ch4acko3/dsh-code-render` | `ctx.codeRenderer` | 将高亮 token 转换为经过转义的 HTML 代码块。 |
+| `@ch4acko3/dsh-code-frame-render` | `ctx.codeFrameRenderer` | 渲染带诊断范围和消息的源码上下文。 |
 | `@ch4acko3/dsh-diff-engine` | `ctx.diffEngine` | 将完整文件快照、DSH 文件差异和 unified patch 归一化为统一文档。 |
 | `@ch4acko3/dsh-diff-render` | `ctx.diffRenderer` | 将归一化 Diff 渲染为经过转义并带源码语法高亮的 HTML。 |
+| `@ch4acko3/dsh-ansi-render` | `ctx.ansiRenderer` | 将 ANSI 终端输出转换为经过转义、自包含的 HTML。 |
 
 依赖方向保持单向：
 
 ```text
-dsh-shiki <- dsh-syntax-highlight <- dsh-code-render
-                    ^
-                    |
-dsh-diff-engine ----+-----------> dsh-diff-render
+dsh-code-render -------+--> dsh-syntax-highlight --> dsh-shiki
+dsh-code-frame-render -+
+dsh-diff-render ---------> dsh-diff-engine
+        +-----------------> dsh-syntax-highlight
+dsh-ansi-render             （独立）
 ```
 
-仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的五个包计划对外发布。
+仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的七个包计划对外发布。
 
 ## 功能
 
@@ -36,7 +39,9 @@ dsh-diff-engine ----+-----------> dsh-diff-render
 - 显式支持完整文件、DSH `FileDiff` 片段、unified 或 Git patch 三种 Diff 输入。
 - 使用一个稳定 Diff 文档表达文件、hunk、行、状态、源码完整度和统计信息。
 - 在增删、上下文和元数据行的语义样式上叠加源码语言 token 颜色。
-- 提供私有交互式预览，可在真实 DSH 浏览器运行时中查看代码、token、代码 HTML 和 Diff HTML。
+- 使用与 LSP position 兼容的零基 UTF-16 范围渲染诊断代码框，但不依赖 LSP。
+- 安全渲染 ANSI SGR、16 色、256 色、真彩色和 allowlist 内的终端超链接。
+- 提供私有交互式预览，可在真实 DSH 浏览器运行时中查看代码、诊断、Diff、ANSI、token 和 HTML。
 
 内置语言：Bash、C、C++、CSS、Diff、Go、HTML、Java、JavaScript、JSX、JSON、Markdown、Python、Rust、SQL、TSX、TypeScript 和 YAML。支持 `sh`、`js`、`md`、`patch`、`py`、`rs`、`ts`、`yml`、`zsh` 等常见别名。
 
@@ -98,9 +103,33 @@ console.log(rendered.html)
 
 Diff 引擎不执行文件 IO，也不运行 Git 命令。完整文件会保留源码快照，用于完整源码语法高亮；只有 patch 或 DSH 片段时，则使用各 hunk 内可获得的源码上下文进行高亮。
 
+编译器、Lint、测试、Agent 或 LSP 兼容诊断都可以使用同一种 Code Frame 模型渲染：
+
+```ts
+const frame = ctx.codeFrameRenderer.render({
+  code: 'const value = missing\n',
+  language: 'ts',
+  fileName: 'app.ts',
+  diagnostics: [{
+    range: {
+      start: { line: 0, character: 14 },
+      end: { line: 0, character: 21 },
+    },
+    message: 'Cannot find name "missing"',
+    severity: 'error',
+  }],
+})
+
+const terminal = ctx.ansiRenderer.render({
+  text: '\u001b[1;31mERROR\u001b[0m build failed',
+})
+```
+
+Code Frame 位置使用零基 UTF-16 code unit 偏移。Renderer 不查找源码，也不与 LSP 通信；ANSI 渲染按请求隔离，不模拟终端光标状态。
+
 ## 本地 DSH 预览
 
-先构建 workspace，再将三个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
+先构建 workspace，再将七个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
 
 ```sh
 pnpm build
@@ -108,13 +137,15 @@ pnpm build
 dsh plugin --profile web add "file:$PWD/packages/shiki"
 dsh plugin --profile web add "file:$PWD/packages/syntax-highlight"
 dsh plugin --profile web add "file:$PWD/packages/code-render"
+dsh plugin --profile web add "file:$PWD/packages/code-frame-render"
 dsh plugin --profile web add "file:$PWD/packages/diff-engine"
 dsh plugin --profile web add "file:$PWD/packages/diff-render"
+dsh plugin --profile web add "file:$PWD/packages/ansi-render"
 dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码渲染、结构化 token、转义后的代码 HTML，以及相对于示例基线的实时 Diff 之间切换。integration consumer 仅用于本地验证，不应发布。
+打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化 token 和转义后的 HTML 之间切换。integration consumer 仅用于本地验证，不应发布。
 
 ## 仓库结构
 
@@ -123,15 +154,17 @@ packages/
   shiki/              共享 Shiki 引擎
   syntax-highlight/   稳定的高亮 token 服务
   code-render/        安全 HTML 渲染器
+  code-frame-render/  诊断源码上下文渲染器
   diff-engine/        多输入归一化 Diff 引擎
   diff-render/        带语法高亮的 HTML Diff 渲染器
+  ansi-render/        安全 ANSI 终端 HTML 渲染器
 integration/
   consumer/           私有 DSH 浏览器探针和预览
 ```
 
 ## 发布
 
-GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布五个包。GitHub 中不保存长期 npm token；每个包首次发布前都必须完成 npm Trusted Publisher 配置。
+GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishing（OIDC），按依赖顺序手动发布七个包。GitHub 中不保存长期 npm token；每个包首次发布前都必须完成 npm Trusted Publisher 配置。
 
 每次发布前先更新包版本并推送到 `main`，等待 CI 通过，然后运行该工作流并选择 `latest` 或 `next` npm 标签。
 

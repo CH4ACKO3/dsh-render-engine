@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.host.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".test-build",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["src/client/**/*.ts", "test/**/*.ts"]
+}

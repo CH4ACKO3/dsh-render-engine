@@ -2,7 +2,7 @@
 
 English | [简体中文](./README.zh-CN.md)
 
-A small monorepo of browser-side rendering services for DeepSeek Harness Web plugins. It separates Shiki tokenization, stable syntax-highlight tokens, normalized diffs, and safe code and diff HTML rendering into five independently publishable npm packages.
+A small monorepo of browser-side rendering services for DeepSeek Harness Web plugins. It separates Shiki tokenization, stable syntax-highlight tokens, normalized diffs, diagnostic code frames, ANSI terminal output, and safe HTML rendering into seven independently publishable npm packages.
 
 ## Packages
 
@@ -11,19 +11,22 @@ A small monorepo of browser-side rendering services for DeepSeek Harness Web plu
 | `@ch4acko3/dsh-shiki` | `ctx.shiki` | Owns one shared Shiki engine and the bundled language set. |
 | `@ch4acko3/dsh-syntax-highlight` | `ctx.syntaxHighlighter` | Converts source code into stable, theme-aware tokens with a plain-text fallback. |
 | `@ch4acko3/dsh-code-render` | `ctx.codeRenderer` | Converts highlight tokens into escaped HTML code blocks. |
+| `@ch4acko3/dsh-code-frame-render` | `ctx.codeFrameRenderer` | Renders source context with diagnostic ranges and messages. |
 | `@ch4acko3/dsh-diff-engine` | `ctx.diffEngine` | Normalizes complete file snapshots, DSH file diffs, and unified patches into one structured document. |
 | `@ch4acko3/dsh-diff-render` | `ctx.diffRenderer` | Renders normalized diffs as escaped HTML with source-language highlighting. |
+| `@ch4acko3/dsh-ansi-render` | `ctx.ansiRenderer` | Converts ANSI terminal output into escaped, self-contained HTML. |
 
 The dependency direction is intentionally one-way:
 
 ```text
-dsh-shiki <- dsh-syntax-highlight <- dsh-code-render
-                    ^
-                    |
-dsh-diff-engine ----+-----------> dsh-diff-render
+dsh-code-render -------+--> dsh-syntax-highlight --> dsh-shiki
+dsh-code-frame-render -+
+dsh-diff-render ---------> dsh-diff-engine
+        +-----------------> dsh-syntax-highlight
+dsh-ansi-render             (standalone)
 ```
 
-The repository root and `integration/consumer` are private. Only the five packages under `packages/` are intended for publication.
+The repository root and `integration/consumer` are private. Only the seven packages under `packages/` are intended for publication.
 
 ## Features
 
@@ -36,7 +39,9 @@ The repository root and `integration/consumer` are private. Only the five packag
 - Three explicit diff inputs: complete files, DSH `FileDiff` fragments, and unified or Git patches.
 - One stable diff document with file, hunk, line, status, source-completeness, and summary data.
 - Source-language token colors layered over semantic addition, deletion, context, and metadata rows.
-- A private interactive preview for inspecting code, tokens, code HTML, and diff HTML in a real DSH browser runtime.
+- Diagnostic code frames with zero-based UTF-16 ranges compatible with LSP positions, without an LSP dependency.
+- Safe ANSI SGR, 16-color, 256-color, true-color, and allowlisted hyperlink rendering.
+- A private interactive preview for inspecting code, diagnostics, diffs, ANSI output, tokens, and HTML in a real DSH browser runtime.
 
 Bundled languages: Bash, C, C++, CSS, Diff, Go, HTML, Java, JavaScript, JSX, JSON, Markdown, Python, Rust, SQL, TSX, TypeScript, and YAML. Common aliases such as `sh`, `js`, `md`, `patch`, `py`, `rs`, `ts`, `yml`, and `zsh` are accepted.
 
@@ -98,9 +103,33 @@ console.log(rendered.html)
 
 The diff engine performs no file IO and runs no Git commands. Complete files retain their source snapshots for full-source syntax highlighting. Patch-only and DSH fragment inputs are highlighted with the source context available inside each hunk.
 
+Render compiler, linter, test, agent, or LSP-compatible diagnostics through the same code-frame model:
+
+```ts
+const frame = ctx.codeFrameRenderer.render({
+  code: 'const value = missing\n',
+  language: 'ts',
+  fileName: 'app.ts',
+  diagnostics: [{
+    range: {
+      start: { line: 0, character: 14 },
+      end: { line: 0, character: 21 },
+    },
+    message: 'Cannot find name "missing"',
+    severity: 'error',
+  }],
+})
+
+const terminal = ctx.ansiRenderer.render({
+  text: '\u001b[1;31mERROR\u001b[0m build failed',
+})
+```
+
+Code-frame positions use zero-based UTF-16 code-unit offsets. The renderer performs no source lookup or LSP communication. ANSI rendering is request-local and does not emulate terminal cursor state.
+
 ## Local DSH preview
 
-Build the workspace, add the five services and the private preview consumer to a DSH Web profile, then start DSH Web:
+Build the workspace, add the seven services and the private preview consumer to a DSH Web profile, then start DSH Web:
 
 ```sh
 pnpm build
@@ -108,13 +137,15 @@ pnpm build
 dsh plugin --profile web add "file:$PWD/packages/shiki"
 dsh plugin --profile web add "file:$PWD/packages/syntax-highlight"
 dsh plugin --profile web add "file:$PWD/packages/code-render"
+dsh plugin --profile web add "file:$PWD/packages/code-frame-render"
 dsh plugin --profile web add "file:$PWD/packages/diff-engine"
 dsh plugin --profile web add "file:$PWD/packages/diff-render"
+dsh plugin --profile web add "file:$PWD/packages/ansi-render"
 dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-Open the URL printed by `dsh web`. The preview overlay lets you edit source code, choose a language, and switch between code rendering, structured tokens, escaped code HTML, and a live diff against the sample baseline. The integration consumer is for local verification only and must not be published.
+Open the URL printed by `dsh web`. The preview overlay lets you edit source code, choose a language, and switch between code, code-frame, diff, ANSI, token, and escaped HTML outputs. The integration consumer is for local verification only and must not be published.
 
 ## Repository layout
 
@@ -123,15 +154,17 @@ packages/
   shiki/              Shared Shiki engine
   syntax-highlight/   Stable highlight-token service
   code-render/        Safe HTML renderer
+  code-frame-render/  Diagnostic source-context renderer
   diff-engine/        Multi-input normalized diff engine
   diff-render/        Syntax-highlighted HTML diff renderer
+  ansi-render/        Safe ANSI terminal HTML renderer
 integration/
   consumer/           Private DSH browser probe and preview
 ```
 
 ## Publishing
 
-The `Publish packages` GitHub Actions workflow publishes the five packages manually, in dependency order, using npm Trusted Publishing (OIDC). No long-lived npm token is stored in GitHub. Each package must have its npm Trusted Publisher configured before its first release.
+The `Publish packages` GitHub Actions workflow publishes the seven packages manually, in dependency order, using npm Trusted Publishing (OIDC). No long-lived npm token is stored in GitHub. Each package must have its npm Trusted Publisher configured before its first release.
 
 Before every release, update the package versions, push them to `main`, wait for CI, and run the workflow with either the `latest` or `next` npm tag.
 

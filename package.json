@@ -2,7 +2,7 @@
   "name": "@ch4acko3/dsh-render-engine",
   "version": "0.1.0",
   "private": true,
-  "description": "Monorepo for DSH code and diff normalization, highlighting, and rendering plugins",
+  "description": "Monorepo for DSH code, diagnostics, diff, and terminal rendering plugins",
   "type": "module",
   "scripts": {
     "build": "pnpm -r --workspace-concurrency=1 run build",

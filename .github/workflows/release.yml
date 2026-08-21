@@ -54,15 +54,19 @@ jobs:
       - name: Pack packages
         run: |
           pnpm --dir packages/shiki pack --out "$RUNNER_TEMP/dsh-shiki.tgz"
+          pnpm --dir packages/ansi-render pack --out "$RUNNER_TEMP/dsh-ansi-render.tgz"
           pnpm --dir packages/diff-engine pack --out "$RUNNER_TEMP/dsh-diff-engine.tgz"
           pnpm --dir packages/syntax-highlight pack --out "$RUNNER_TEMP/dsh-syntax-highlight.tgz"
           pnpm --dir packages/code-render pack --out "$RUNNER_TEMP/dsh-code-render.tgz"
+          pnpm --dir packages/code-frame-render pack --out "$RUNNER_TEMP/dsh-code-frame-render.tgz"
           pnpm --dir packages/diff-render pack --out "$RUNNER_TEMP/dsh-diff-render.tgz"
 
       - name: Publish packages
         run: |
           npm publish "$RUNNER_TEMP/dsh-shiki.tgz" --access public --tag "$DIST_TAG"
+          npm publish "$RUNNER_TEMP/dsh-ansi-render.tgz" --access public --tag "$DIST_TAG"
           npm publish "$RUNNER_TEMP/dsh-diff-engine.tgz" --access public --tag "$DIST_TAG"
           npm publish "$RUNNER_TEMP/dsh-syntax-highlight.tgz" --access public --tag "$DIST_TAG"
           npm publish "$RUNNER_TEMP/dsh-code-render.tgz" --access public --tag "$DIST_TAG"
+          npm publish "$RUNNER_TEMP/dsh-code-frame-render.tgz" --access public --tag "$DIST_TAG"
           npm publish "$RUNNER_TEMP/dsh-diff-render.tgz" --access public --tag "$DIST_TAG"

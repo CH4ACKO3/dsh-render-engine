@@ -73,6 +73,7 @@ dsh-table-render            （独立）
 - 多个 DSH Web 插件共享一个延迟初始化的 Shiki 引擎。
 - 提供不依赖 Shiki 内部 token 结构的稳定数据模型。
 - 在每一层服务中保留原始 LF、CRLF 和 CR 换行符。
+- Markdown 渲染模式：默认保持 GFM 行为；也可使用 `render-friendly`，让单波浪线保持原样，同时继续支持 `~~删除线~~`。
 - 使用 CSS 变量输出颜色，跟随 DSH 主题。
 - 语言未提供或不受支持时自动回退为纯文本。
 - 生成 HTML 时转义源码内容。

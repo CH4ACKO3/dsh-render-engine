@@ -73,6 +73,7 @@ The repository root and `integration/consumer` are private. Only the twelve pack
 - One lazily initialized Shiki engine shared by DSH Web plugins.
 - Stable token data independent of Shiki's internal token shape.
 - Original LF, CRLF, and CR line endings preserved across every service layer.
+- Markdown rendering modes: GFM by default, plus `render-friendly` to keep single tildes literal while preserving `~~strikethrough~~`.
 - CSS-variable colors that follow the DSH theme.
 - Plain-text fallback for an absent or unsupported language hint.
 - Escaped source text in the generated HTML.

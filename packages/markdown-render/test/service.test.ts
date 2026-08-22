@@ -62,6 +62,24 @@ test('renders common GFM structures as theme-aware HTML', async () => {
   assert.match(result.html, /<del>obsolete<\/del>/)
 })
 
+test('keeps GFM single-tilde strikethrough by default', async () => {
+  const result = await renderer().render({ markdown: '~approximately~ and ~~obsolete~~' })
+
+  assert.match(result.html, /<del>approximately<\/del>/)
+  assert.match(result.html, /<del>obsolete<\/del>/)
+})
+
+test('treats single tildes as text in render-friendly mode', async () => {
+  const result = await renderer().render({
+    markdown: '~approximately~ and ~~obsolete~~ and `~literal~`',
+    mode: 'render-friendly',
+  })
+
+  assert.match(result.html, /~approximately~ and <del>obsolete<\/del>/)
+  assert.match(result.html, /<code>~literal~<\/code>/)
+  assert.doesNotMatch(result.html, /<del>approximately<\/del>/)
+})
+
 test('delegates fenced code blocks to the shared code renderer', async () => {
   const calls: Array<{ code: string, language: string | undefined }> = []
   const result = await renderer((code, language) => calls.push({ code, language })).render({

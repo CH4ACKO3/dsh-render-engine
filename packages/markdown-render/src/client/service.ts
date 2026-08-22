@@ -112,6 +112,15 @@ function mathExtensions(math: MarkdownMath[]): TokenizerAndRendererExtension[] {
   }]
 }
 
+const renderFriendlyTildeExtension: TokenizerAndRendererExtension = {
+  name: 'dshLiteralSingleTilde',
+  level: 'inline',
+  tokenizer(source) {
+    if (!source.startsWith('~') || source.startsWith('~~')) return
+    return { type: 'text', raw: '~', text: '~' }
+  },
+}
+
 export class HtmlMarkdownRenderer implements MarkdownRendererService {
   private readonly codeRenderer: CodeRendererService
   private readonly purifier: DOMPurify
@@ -133,8 +142,10 @@ export class HtmlMarkdownRenderer implements MarkdownRendererService {
   async render(request: MarkdownRenderRequest): Promise<MarkdownRenderResult> {
     const codeBlocks: MarkdownCodeBlock[] = []
     const math: MarkdownMath[] = []
+    const extensions = mathExtensions(math)
+    if (request.mode === 'render-friendly') extensions.push(renderFriendlyTildeExtension)
     const marked = new Marked({
-      extensions: mathExtensions(math),
+      extensions,
       gfm: true,
       renderer: {
         code: ({ text, lang }) => {

@@ -8,10 +8,13 @@ export const inject = ['markdownRenderer']
 export async function apply(ctx) {
   const result = await ctx.markdownRenderer.render({
     markdown: '# Result\n\n```ts\nconst answer = 42\n```',
+    mode: 'render-friendly',
   })
   console.log(result.html)
 }
 ```
+
+`mode` is optional. The default, `gfm`, preserves GitHub Flavored Markdown behavior, including `~text~` strikethrough. Use `render-friendly` when Markdown contains approximate values or prose that uses single tildes: it leaves `~text~` literal while continuing to render `~~text~~` as strikethrough.
 
 The renderer supports GFM tables, task lists, strikethrough, links, images, blockquotes, and fenced code. Raw HTML is displayed as text, unsafe URLs and executable markup are removed, and the returned HTML contains only fixed renderer styles plus sanitized Markdown output.
 

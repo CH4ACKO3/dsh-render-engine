@@ -1,6 +1,6 @@
 {
   "name": "@ch4acko3/dsh-markdown-render",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Safe GFM rendering service with highlighted code blocks for DeepSeek Harness Web plugins",
   "type": "module",
   "main": "./lib/index.js",

@@ -94,7 +94,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
       ansi_up:
         specifier: ^6.0.6
@@ -109,7 +109,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
 
   packages/code-render:
@@ -121,7 +121,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
 
   packages/diff-engine:
@@ -130,7 +130,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
       diff:
         specifier: ^9.0.0
@@ -148,7 +148,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
 
   packages/markdown-render:
@@ -160,7 +160,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
       dompurify:
         specifier: ^3.4.14
@@ -182,7 +182,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
       katex:
         specifier: ^0.18.4
@@ -201,7 +201,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
       dompurify:
         specifier: ^3.4.14
@@ -223,7 +223,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
       '@shikijs/langs':
         specifier: ^4.3.1
@@ -238,7 +238,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
 
   packages/syntax-highlight:
@@ -250,7 +250,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
 
   packages/table-render:
@@ -259,7 +259,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
       '@deepseek-ai/dsh-client-runtime':
-        specifier: 0.1.0-rc.8
+        specifier: '>=0.1.0-rc.8'
         version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
 
 packages:

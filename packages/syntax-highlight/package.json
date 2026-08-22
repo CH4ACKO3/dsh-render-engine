@@ -1,6 +1,6 @@
 {
   "name": "@ch4acko3/dsh-syntax-highlight",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Structured syntax highlighting service for DeepSeek Harness Web plugins",
   "type": "module",
   "main": "./lib/index.js",
@@ -60,7 +60,7 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.8"
+    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.8"
   },
   "dependencies": {
     "@ch4acko3/dsh-shiki": "workspace:^"

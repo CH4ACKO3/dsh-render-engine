@@ -8,7 +8,9 @@ import type {} from '@ch4acko3/dsh-markdown-render/client'
 import type {} from '@ch4acko3/dsh-math-render/client'
 import type {} from '@ch4acko3/dsh-mermaid-render/client'
 import type {} from '@ch4acko3/dsh-shiki/client'
+import type {} from '@ch4acko3/dsh-structured-render/client'
 import type {} from '@ch4acko3/dsh-syntax-highlight/client'
+import type {} from '@ch4acko3/dsh-table-render/client'
 import { installedChatRendererCount, installChatRenderers } from './chat-renderers.js'
 import { installPreview, setPreviewIntegrationPassed } from './preview.js'
 
@@ -30,6 +32,8 @@ interface IntegrationResult {
   markdownEscapedHtml: boolean
   mathRendered: boolean
   mermaidRendered: boolean
+  structuredRendered: boolean
+  tableRendered: boolean
   chatViewAdaptersInstalled: number
 }
 
@@ -46,6 +50,8 @@ export const inject = [
   'mathRenderer',
   'mermaidRenderer',
   'markdownRenderer',
+  'structuredRenderer',
+  'tableRenderer',
 ] as const
 
 function sourceOf(
@@ -82,6 +88,8 @@ function rendererServicesPassed(result: IntegrationResult): boolean {
     && result.markdownEscapedHtml
     && result.mathRendered
     && result.mermaidRendered
+    && result.structuredRendered
+    && result.tableRendered
 }
 
 export async function apply(ctx: ClientContext): Promise<void> {
@@ -123,6 +131,18 @@ export async function apply(ctx: ClientContext): Promise<void> {
   const renderedMarkdown = await ctx.markdownRenderer.render({
     markdown: '# Safe\n\n```ts\nconst value = 42\n```\n\n```mermaid\ngraph TD\n  Parse --> Render\n```\n\nEuler: $e^{i\\pi} + 1 = 0$.\n\n<script>alert(1)</script>',
   })
+  const renderedStructured = ctx.structuredRenderer.render({
+    label: '<probe>',
+    expandedDepth: 2,
+    value: {
+      ready: true,
+      nested: { source: '<script>alert(1)</script>' },
+    },
+  })
+  const renderedTable = ctx.tableRenderer.render({
+    columns: [{ key: 'name', label: '<Name>' }, { key: 'tests', align: 'end' }],
+    rows: [{ name: '<script>alert(1)</script>', tests: 4 }],
+  })
   const diffContent = renderedContent(renderedDiff.html)
   const frameContent = renderedContent(renderedFrame.html)
   const markdownContent = renderedContent(renderedMarkdown.html)
@@ -153,6 +173,15 @@ export async function apply(ctx: ClientContext): Promise<void> {
       && renderedMarkdown.html.includes('<math'),
     mermaidRendered: renderedMarkdown.html.includes('dsh-mermaid-render')
       && renderedMarkdown.html.includes('<svg'),
+    structuredRendered: renderedStructured.nodeCount === 4
+      && renderedStructured.html.includes('dsh-structured-render')
+      && renderedStructured.html.includes('&lt;script&gt;')
+      && !renderedStructured.html.includes('<script>'),
+    tableRendered: renderedTable.rowCount === 1
+      && renderedTable.columnCount === 2
+      && renderedTable.html.includes('dsh-table-render')
+      && renderedTable.html.includes('&lt;script&gt;')
+      && !renderedTable.html.includes('<script>'),
     chatViewAdaptersInstalled: 0,
   }
 
@@ -161,7 +190,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
     result.passed = rendererServicesPassed(result)
       && result.tokenizedSource === source
       && result.highlightedSource === source
-      && result.chatViewAdaptersInstalled === 5
+      && result.chatViewAdaptersInstalled === 7
     document.documentElement.dataset.dshRenderEngineIntegration = JSON.stringify(result)
     setPreviewIntegrationPassed(result.passed)
     console.info('[dsh-render-engine:integration]', JSON.stringify(result))

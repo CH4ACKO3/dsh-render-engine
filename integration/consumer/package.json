@@ -60,7 +60,9 @@
         "@ch4acko3/dsh-math-render",
         "@ch4acko3/dsh-mermaid-render",
         "@ch4acko3/dsh-shiki",
+        "@ch4acko3/dsh-structured-render",
         "@ch4acko3/dsh-syntax-highlight",
+        "@ch4acko3/dsh-table-render",
         "@ch4acko3/dsh-code-render"
       ],
       "platform": "web"
@@ -84,7 +86,9 @@
     "@ch4acko3/dsh-math-render": "workspace:*",
     "@ch4acko3/dsh-mermaid-render": "workspace:*",
     "@ch4acko3/dsh-shiki": "workspace:*",
-    "@ch4acko3/dsh-syntax-highlight": "workspace:*"
+    "@ch4acko3/dsh-structured-render": "workspace:*",
+    "@ch4acko3/dsh-syntax-highlight": "workspace:*",
+    "@ch4acko3/dsh-table-render": "workspace:*"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.8",

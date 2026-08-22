@@ -1,0 +1,81 @@
+{
+  "name": "@ch4acko3/dsh-structured-render",
+  "version": "0.1.1",
+  "description": "Safe expandable structured data rendering service for DeepSeek Harness Web plugins",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "pnpm run build:client && pnpm run build:host",
+    "build:client": "tsdown --config-loader unrun && tsc -p tsconfig.client.build.json",
+    "build:host": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
+    "prepack": "pnpm run build"
+  },
+  "engines": {
+    "node": "^22.22.3 || >=24.11.1"
+  },
+  "dsh": {
+    "plugin": {
+      "schemaVersion": 1,
+      "displayName": {
+        "en": "Structured Data Render",
+        "zh-CN": "结构化数据渲染"
+      },
+      "summary": {
+        "en": "Renders JSON-compatible values as safe, expandable HTML trees.",
+        "zh-CN": "将 JSON 兼容值渲染为安全、可折叠的 HTML 树。"
+      },
+      "category": "development"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.8"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "json",
+    "structured-data",
+    "tree-view"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CH4ACKO3/dsh-render-engine.git",
+    "directory": "packages/structured-render"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

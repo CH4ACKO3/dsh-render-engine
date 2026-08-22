@@ -5,7 +5,9 @@ import type {} from '@ch4acko3/dsh-code-render/client'
 import type {} from '@ch4acko3/dsh-diff-engine/client'
 import type {} from '@ch4acko3/dsh-diff-render/client'
 import type {} from '@ch4acko3/dsh-shiki/client'
+import type {} from '@ch4acko3/dsh-structured-render/client'
 import type {} from '@ch4acko3/dsh-syntax-highlight/client'
+import type {} from '@ch4acko3/dsh-table-render/client'
 
 const ROOT_ID = 'dsh-render-engine-preview'
 const STYLE_ID = 'dsh-render-engine-preview-styles'
@@ -17,7 +19,7 @@ const SAMPLE_CODE = `type RenderResult = {
 export function render(code: string): RenderResult {
   return {
     language: 'typescript',
-    highlighted: code.length > 0,
+    highlighted: 'yes',
   }
 }`
 
@@ -30,6 +32,21 @@ export function render(code: string): RenderResult {
     language: 'plaintext',
   }
 }`
+
+const SAMPLE_STRUCTURED = {
+  status: 'ready',
+  packages: [
+    { name: 'dsh-structured-render', tests: 4, published: false },
+    { name: 'dsh-table-render', tests: 4, published: false },
+  ],
+  checks: { build: true, typecheck: true, test: true },
+}
+
+const SAMPLE_TABLE = [
+  { package: 'structured-render', output: 'HTML tree', tests: 4, ready: true },
+  { package: 'table-render', output: 'HTML table', tests: 4, ready: true },
+  { package: 'vega-render', output: 'SVG / Canvas', tests: null, ready: false },
+]
 
 const styles = `
 #${ROOT_ID} {
@@ -269,7 +286,7 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
     <header class="dre-header">
       <div class="dre-title">
         <strong>开发内容渲染实验台</strong>
-        <span>code, diagnostics, diff, ANSI, and safe HTML</span>
+        <span>code, diagnostics, diff, ANSI, structured data, and tables</span>
       </div>
       <span class="dre-status">${integrationPassed ? '服务正常' : '检查失败'}</span>
       <button class="dre-icon-button" type="button" aria-label="收起预览" aria-expanded="true">
@@ -294,6 +311,8 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
         <button class="dre-tab" id="dre-tab-frame" type="button" role="tab" aria-controls="dre-pane-frame" aria-selected="false" tabindex="-1" data-tab="frame">Frame</button>
         <button class="dre-tab" id="dre-tab-diff" type="button" role="tab" aria-controls="dre-pane-diff" aria-selected="false" tabindex="-1" data-tab="diff">Diff</button>
         <button class="dre-tab" id="dre-tab-ansi" type="button" role="tab" aria-controls="dre-pane-ansi" aria-selected="false" tabindex="-1" data-tab="ansi">ANSI</button>
+        <button class="dre-tab" id="dre-tab-structured" type="button" role="tab" aria-controls="dre-pane-structured" aria-selected="false" tabindex="-1" data-tab="structured">Structure</button>
+        <button class="dre-tab" id="dre-tab-table" type="button" role="tab" aria-controls="dre-pane-table" aria-selected="false" tabindex="-1" data-tab="table">Table</button>
         <button class="dre-tab" id="dre-tab-tokens" type="button" role="tab" aria-controls="dre-pane-tokens" aria-selected="false" tabindex="-1" data-tab="tokens">Tokens</button>
         <button class="dre-tab" id="dre-tab-html" type="button" role="tab" aria-controls="dre-pane-html" aria-selected="false" tabindex="-1" data-tab="html">HTML</button>
       </div>
@@ -301,6 +320,8 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
       <div class="dre-pane dre-rendered" id="dre-pane-frame" data-pane="frame" role="tabpanel" aria-labelledby="dre-tab-frame" hidden></div>
       <div class="dre-pane dre-rendered" id="dre-pane-diff" data-pane="diff" role="tabpanel" aria-labelledby="dre-tab-diff" hidden></div>
       <div class="dre-pane dre-rendered" id="dre-pane-ansi" data-pane="ansi" role="tabpanel" aria-labelledby="dre-tab-ansi" hidden></div>
+      <div class="dre-pane dre-rendered" id="dre-pane-structured" data-pane="structured" role="tabpanel" aria-labelledby="dre-tab-structured" hidden></div>
+      <div class="dre-pane dre-rendered" id="dre-pane-table" data-pane="table" role="tabpanel" aria-labelledby="dre-tab-table" hidden></div>
       <pre class="dre-pane dre-data" id="dre-pane-tokens" data-pane="tokens" role="tabpanel" aria-labelledby="dre-tab-tokens" hidden></pre>
       <pre class="dre-pane dre-data" id="dre-pane-html" data-pane="html" role="tabpanel" aria-labelledby="dre-tab-html" hidden></pre>
     </section>
@@ -314,9 +335,11 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
   const framePane = root.querySelector<HTMLElement>('[data-pane="frame"]')
   const diffPane = root.querySelector<HTMLElement>('[data-pane="diff"]')
   const ansiPane = root.querySelector<HTMLElement>('[data-pane="ansi"]')
+  const structuredPane = root.querySelector<HTMLElement>('[data-pane="structured"]')
+  const tablePane = root.querySelector<HTMLElement>('[data-pane="table"]')
   const tokensPane = root.querySelector<HTMLElement>('[data-pane="tokens"]')
   const htmlPane = root.querySelector<HTMLElement>('[data-pane="html"]')
-  if (language === null || source === null || previewPane === null || framePane === null || diffPane === null || ansiPane === null || tokensPane === null || htmlPane === null) {
+  if (language === null || source === null || previewPane === null || framePane === null || diffPane === null || ansiPane === null || structuredPane === null || tablePane === null || tokensPane === null || htmlPane === null) {
     throw new Error('Render preview failed to create its controls')
   }
 
@@ -340,29 +363,48 @@ export function installPreview(ctx: ClientContext, integrationPassed: boolean): 
     })
     const renderedDiff = ctx.diffRenderer.render(diff)
     const sourceLines = source.value.split(/\r\n|\r|\n/)
-    const foundLine = sourceLines.findIndex(line => line.length > 0)
-    const diagnosticLine = foundLine < 0 ? 0 : foundLine
-    const diagnosticLength = sourceLines[diagnosticLine]?.length ?? 0
+    const invalidValue = "'yes'"
+    const diagnosticLine = sourceLines.findIndex(line => line.includes(invalidValue))
+    const diagnosticCharacter = diagnosticLine < 0
+      ? -1
+      : sourceLines[diagnosticLine]!.indexOf(invalidValue)
     const renderedFrame = ctx.codeFrameRenderer.render({
       code: source.value,
       language: language.value,
       fileName: 'sample.ts',
-      diagnostics: [{
+      diagnostics: diagnosticCharacter < 0 ? [] : [{
         range: {
-          start: { line: diagnosticLine, character: 0 },
-          end: { line: diagnosticLine, character: Math.min(8, diagnosticLength) },
+          start: { line: diagnosticLine, character: diagnosticCharacter },
+          end: { line: diagnosticLine, character: diagnosticCharacter + invalidValue.length },
         },
-        message: '示例诊断范围',
-        severity: 'warning',
+        message: "Type 'string' is not assignable to type 'boolean'.",
+        severity: 'error',
       }],
     })
     const renderedAnsi = ctx.ansiRenderer.render({
       text: `\u001b[1;32mPASS\u001b[0m render ${source.value.length} source units\n\u001b[36mINFO\u001b[0m ANSI colors preserved`,
     })
+    const renderedStructured = ctx.structuredRenderer.render({
+      label: 'release',
+      expandedDepth: 2,
+      value: SAMPLE_STRUCTURED,
+    })
+    const renderedTable = ctx.tableRenderer.render({
+      caption: 'Renderer readiness',
+      columns: [
+        { key: 'package', label: 'Package' },
+        { key: 'output', label: 'Output' },
+        { key: 'tests', label: 'Tests', align: 'end' },
+        { key: 'ready', label: 'Ready', align: 'center' },
+      ],
+      rows: SAMPLE_TABLE,
+    })
     previewPane.innerHTML = rendered.html
     framePane.innerHTML = renderedFrame.html
     diffPane.innerHTML = renderedDiff.html
     ansiPane.innerHTML = renderedAnsi.html
+    structuredPane.innerHTML = renderedStructured.html
+    tablePane.innerHTML = renderedTable.html
     tokensPane.textContent = JSON.stringify(highlighted, null, 2)
     htmlPane.textContent = rendered.html
   }

@@ -17,6 +17,8 @@ const packageDirectories = {
   'dsh-markdown-render': 'packages/markdown-render',
   'dsh-mermaid-render': 'packages/mermaid-render',
   'dsh-math-render': 'packages/math-render',
+  'dsh-structured-render': 'packages/structured-render',
+  'dsh-table-render': 'packages/table-render',
   'dsh-code-frame-render': 'packages/code-frame-render',
   'dsh-diff-render': 'packages/diff-render',
 }

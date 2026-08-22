@@ -56,9 +56,15 @@ importers:
       '@ch4acko3/dsh-shiki':
         specifier: workspace:*
         version: link:../../packages/shiki
+      '@ch4acko3/dsh-structured-render':
+        specifier: workspace:*
+        version: link:../../packages/structured-render
       '@ch4acko3/dsh-syntax-highlight':
         specifier: workspace:*
         version: link:../../packages/syntax-highlight
+      '@ch4acko3/dsh-table-render':
+        specifier: workspace:*
+        version: link:../../packages/table-render
       '@deepseek-ai/cordis':
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
@@ -226,11 +232,29 @@ importers:
         specifier: ^4.3.1
         version: 4.4.3
 
+  packages/structured-render:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: ^4.0.1
+        version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: 0.1.0-rc.8
+        version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
+
   packages/syntax-highlight:
     dependencies:
       '@ch4acko3/dsh-shiki':
         specifier: workspace:^
         version: link:../shiki
+      '@deepseek-ai/cordis':
+        specifier: ^4.0.1
+        version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: 0.1.0-rc.8
+        version: 0.1.0-rc.8(c30c11caf28a5634279e6e808a6e5391)
+
+  packages/table-render:
+    dependencies:
       '@deepseek-ai/cordis':
         specifier: ^4.0.1
         version: 4.0.1(@deepseek-ai/cordis-plugin-include@1.0.6)(@deepseek-ai/cordis-plugin-loader@1.0.2)

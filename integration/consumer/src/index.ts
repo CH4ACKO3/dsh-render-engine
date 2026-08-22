@@ -71,6 +71,38 @@ graph LR
 \`\`\`
 `
 
+const DEMO_STRUCTURED = JSON.stringify({
+  label: 'release',
+  expandedDepth: 2,
+  value: {
+    status: 'ready',
+    packages: [
+      { name: 'dsh-structured-render', tests: 4, published: false },
+      { name: 'dsh-table-render', tests: 4, published: false },
+    ],
+    checks: {
+      build: true,
+      typecheck: true,
+      test: true,
+    },
+  },
+}, null, 2)
+
+const DEMO_TABLE = JSON.stringify({
+  caption: 'Renderer readiness',
+  columns: [
+    { key: 'package', label: 'Package' },
+    { key: 'format', label: 'Output' },
+    { key: 'tests', label: 'Tests', align: 'end' },
+    { key: 'ready', label: 'Ready', align: 'center' },
+  ],
+  rows: [
+    { package: 'structured-render', format: 'HTML tree', tests: 4, ready: true },
+    { package: 'table-render', format: 'HTML table', tests: 4, ready: true },
+    { package: 'vega-render', format: 'SVG / Canvas', ready: false },
+  ],
+}, null, 2)
+
 const DEMO_PATCH = `diff --git a/src/greeting.ts b/src/greeting.ts
 index 34ddf2a..64c809f 100644
 --- a/src/greeting.ts
@@ -118,6 +150,18 @@ export function apply(ctx: Context): () => void {
       description: 'Show the DSH Markdown Render ChatView fixture',
       recordInput: false,
       handler: () => ({ kind: 'success', text: DEMO_MARKDOWN }),
+    }),
+    ctx.commands.register({
+      name: 'structureddemo',
+      description: 'Show the DSH Structured Data Render ChatView fixture',
+      recordInput: false,
+      handler: () => ({ kind: 'success', text: DEMO_STRUCTURED }),
+    }),
+    ctx.commands.register({
+      name: 'tabledemo',
+      description: 'Show the DSH Table Render ChatView fixture',
+      recordInput: false,
+      handler: () => ({ kind: 'success', text: DEMO_TABLE }),
     }),
   ]
   return () => dispose.reverse().forEach(disposeCommand => disposeCommand())

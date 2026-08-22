@@ -1,6 +1,6 @@
 # Browser integration test
 
-`consumer` is a private DSH plugin that consumes all ten publishable services inside a real browser Cordis runtime.
+`consumer` is a private DSH plugin that consumes all twelve publishable services inside a real browser Cordis runtime.
 
 It verifies:
 
@@ -11,6 +11,8 @@ It verifies:
 - Rendered HTML uses DSH's `--shiki-*` theme variables.
 - Markdown rendering sanitizes executable markup and delegates ordinary code, Mermaid, and TeX to the active renderer services.
 - Mermaid rendering produces sanitized SVG and math rendering produces native MathML.
+- Structured data rendering produces an escaped expandable tree.
+- Table rendering produces an escaped semantic table with inferred or explicit columns.
 - All three diff input kinds normalize into structured documents.
 - Diff rendering highlights source tokens and escapes untrusted content.
 - Code-frame rendering applies diagnostic ranges and escapes source, file names, and messages.
@@ -28,6 +30,8 @@ dsh plugin --profile web add link:/workspace/packages/code-render
 dsh plugin --profile web add link:/workspace/packages/mermaid-render
 dsh plugin --profile web add link:/workspace/packages/math-render
 dsh plugin --profile web add link:/workspace/packages/markdown-render
+dsh plugin --profile web add link:/workspace/packages/structured-render
+dsh plugin --profile web add link:/workspace/packages/table-render
 dsh plugin --profile web add link:/workspace/packages/code-frame-render
 dsh plugin --profile web add link:/workspace/packages/diff-engine
 dsh plugin --profile web add link:/workspace/packages/diff-render

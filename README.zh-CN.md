@@ -2,11 +2,11 @@
 
 [English](./README.md) | 简体中文
 
-一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、Markdown、Mermaid 图表、TeX 数学公式、归一化 Diff、诊断代码框、ANSI 终端输出和安全 HTML 渲染拆分为十个可以独立发布的 npm 包。
+一个面向 DeepSeek Harness Web 插件的轻量浏览器端渲染服务 monorepo。项目将 Shiki 分词、稳定的语法高亮 token、Markdown、结构化数据、语义表格、Mermaid 图表、TeX 数学公式、归一化 Diff、诊断代码框、ANSI 终端输出和安全 HTML 渲染拆分为十二个可以独立发布的 npm 包。
 
 ## 提供渲染服务，而不是具体前端
 
-十个公开包**不会**附带页面、面板、ChatView 卡片或其他具体前端。它们注册 `ctx.codeRenderer`、`ctx.markdownRenderer`、`ctx.mermaidRenderer`、`ctx.mathRenderer`、`ctx.diffRenderer` 等可复用的浏览器端 Cordis 服务。下游插件自行决定承载界面和交互方式，将自己的数据交给这些服务，并取得可以嵌入目标界面的归一化结构、稳定 token、SVG、MathML，或经过转义且响应主题的 HTML。
+十二个公开包**不会**附带页面、面板、ChatView 卡片或其他具体前端。它们注册 `ctx.codeRenderer`、`ctx.markdownRenderer`、`ctx.structuredRenderer`、`ctx.tableRenderer`、`ctx.diffRenderer` 等可复用的浏览器端 Cordis 服务。下游插件自行决定承载界面和交互方式，将自己的数据交给这些服务，并取得可以嵌入目标界面的归一化结构、稳定 token、SVG、MathML，或经过转义且响应主题的 HTML。
 
 下方展示的 ChatView 卡片只属于私有的 `integration/consumer`。它们用于演示公开服务的一种接入方式，并不是随公开渲染器包发布的 UI。
 
@@ -42,6 +42,8 @@ ANSI 控制序列被解释为可读的终端颜色和强调样式，同时保持
 | `@ch4acko3/dsh-markdown-render` | `ctx.markdownRenderer` | 将不受信任的 GFM 渲染为经过清洗、响应主题的 HTML，并把代码围栏交给 `ctx.codeRenderer`。 |
 | `@ch4acko3/dsh-mermaid-render` | `ctx.mermaidRenderer` | 将不受信任的 Mermaid 定义渲染为经过清洗的 SVG。 |
 | `@ch4acko3/dsh-math-render` | `ctx.mathRenderer` | 使用 KaTeX 将 TeX 表达式渲染为可访问的原生 MathML。 |
+| `@ch4acko3/dsh-structured-render` | `ctx.structuredRenderer` | 将 JSON 兼容值渲染为经过转义、可折叠的 HTML 树。 |
+| `@ch4acko3/dsh-table-render` | `ctx.tableRenderer` | 将记录数组渲染为经过转义、响应式的语义 HTML 表格。 |
 | `@ch4acko3/dsh-code-frame-render` | `ctx.codeFrameRenderer` | 渲染带诊断范围和消息的源码上下文。 |
 | `@ch4acko3/dsh-diff-engine` | `ctx.diffEngine` | 将完整文件快照、DSH 文件差异和 unified patch 归一化为统一文档。 |
 | `@ch4acko3/dsh-diff-render` | `ctx.diffRenderer` | 将归一化 Diff 渲染为经过转义并带源码语法高亮的 HTML。 |
@@ -60,9 +62,11 @@ dsh-diff-render ---------> dsh-diff-engine
 dsh-ansi-render             （独立）
 dsh-mermaid-render          （独立）
 dsh-math-render             （独立）
+dsh-structured-render       （独立）
+dsh-table-render            （独立）
 ```
 
-仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的十个包计划对外发布。
+仓库根包和 `integration/consumer` 均为私有包。只有 `packages/` 下的十二个包计划对外发布。
 
 ## 功能
 
@@ -75,6 +79,8 @@ dsh-math-render             （独立）
 - 安全渲染 GitHub Flavored Markdown：原始 HTML 作为文本显示，代码围栏复用共享代码渲染器。
 - 使用 Mermaid 严格安全设置生成并再次清洗 SVG 图表。
 - 将 TeX 渲染为原生 MathML，无需额外样式表或字体文件。
+- 使用 JSON 类型样式和可配置初始展开深度渲染结构化数据树。
+- 使用推断或显式列、对齐和空状态渲染响应式语义表格。
 - 显式支持完整文件、DSH `FileDiff` 片段、unified 或 Git patch 三种 Diff 输入。
 - 使用一个稳定 Diff 文档表达文件、hunk、行、状态、源码完整度和统计信息。
 - 在增删、上下文和元数据行的语义样式上叠加源码语言 token 颜色。
@@ -146,6 +152,26 @@ const diagram = await ctx.mermaidRenderer.render({ source: 'graph TD\n  A --> B'
 const formula = ctx.mathRenderer.render({ source: String.raw`e^{i\pi} + 1 = 0` })
 ```
 
+不绑定具体面板，直接渲染结构化工具输出或记录数组：
+
+```ts
+const tree = ctx.structuredRenderer.render({
+  label: 'response',
+  value: { ready: true, items: [{ id: 1 }, { id: 2 }] },
+  expandedDepth: 2,
+})
+
+const table = ctx.tableRenderer.render({
+  caption: 'Package status',
+  rows: [
+    { package: 'markdown', tests: 7, ready: true },
+    { package: 'mermaid', tests: 2, ready: true },
+  ],
+})
+```
+
+结构化渲染器接收 JSON 兼容值，而不是序列化后的 JSON 文本。表格渲染器接收标量记录单元格，按照键首次出现的顺序推断列，也支持显式标签和对齐方式。
+
 完整文件、DSH 文件差异片段和 unified patch 都会归一化为相同文档，再交给同一个 renderer：
 
 ```ts
@@ -187,7 +213,7 @@ Code Frame 位置使用零基 UTF-16 code unit 偏移。Renderer 不查找源码
 
 ## 本地 DSH 预览
 
-先构建 workspace，再将十个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
+先构建 workspace，再将十二个服务插件和私有预览 consumer 添加到 DSH Web profile，最后启动 DSH Web：
 
 ```sh
 pnpm build
@@ -198,6 +224,8 @@ dsh plugin --profile web add "file:$PWD/packages/code-render"
 dsh plugin --profile web add "file:$PWD/packages/mermaid-render"
 dsh plugin --profile web add "file:$PWD/packages/math-render"
 dsh plugin --profile web add "file:$PWD/packages/markdown-render"
+dsh plugin --profile web add "file:$PWD/packages/structured-render"
+dsh plugin --profile web add "file:$PWD/packages/table-render"
 dsh plugin --profile web add "file:$PWD/packages/code-frame-render"
 dsh plugin --profile web add "file:$PWD/packages/diff-engine"
 dsh plugin --profile web add "file:$PWD/packages/diff-render"
@@ -206,7 +234,7 @@ dsh plugin --profile web add "file:$PWD/integration/consumer"
 dsh web
 ```
 
-打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化 token 和转义后的 HTML 之间切换。在 ChatView 中运行 `/codedemo`、`/markdowndemo`、`/framedemo`、`/ansidemo` 或 `/renderdemo`，可以通过原生命令插槽验证同一组服务。integration consumer 仅用于本地验证，不应发布。
+打开 `dsh web` 输出的地址。预览浮层支持编辑源码、选择语言，并在代码、Code Frame、Diff、ANSI、结构化数据树、语义表格、结构化 token 和转义后的 HTML 之间切换。在 ChatView 中运行 `/codedemo`、`/markdowndemo`、`/structureddemo`、`/tabledemo`、`/framedemo`、`/ansidemo` 或 `/renderdemo`，可以通过原生命令插槽验证同一组服务。integration consumer 仅用于本地验证，不应发布。
 
 ## 仓库结构
 
@@ -218,6 +246,8 @@ packages/
   markdown-render/    经过清洗的 GFM 渲染器
   mermaid-render/     经过清洗的 Mermaid SVG 渲染器
   math-render/        KaTeX MathML 渲染器
+  structured-render/  可折叠的 JSON 兼容值渲染器
+  table-render/       响应式语义表格渲染器
   code-frame-render/  诊断源码上下文渲染器
   diff-engine/        多输入归一化 Diff 引擎
   diff-render/        带语法高亮的 HTML Diff 渲染器
@@ -236,7 +266,7 @@ GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishi
 2. 等待该提交的 CI 通过。
 3. 创建并推送与包版本一致的包 Tag，例如 `dsh-code-render@0.2.0`。
 
-每个 Tag 只发布其中指定的包，因此十个包可以使用不同版本。稳定版 Tag 会发布到 npm `latest`；`dsh-code-render@0.2.0-next.0` 之类的预发布 Tag 会发布到 npm `next`。正式发布前，工作流会拒绝未知包、格式错误的 Tag、不在 `main` 上的 Tag 提交、包版本与 Tag 不一致，以及 npm 上已经存在的版本。
+每个 Tag 只发布其中指定的包，因此十二个包可以使用不同版本。稳定版 Tag 会发布到 npm `latest`；`dsh-code-render@0.2.0-next.0` 之类的预发布 Tag 会发布到 npm `next`。正式发布前，工作流会拒绝未知包、格式错误的 Tag、不在 `main` 上的 Tag 提交、包版本与 Tag 不一致，以及 npm 上已经存在的版本。
 
 ## 许可证
 

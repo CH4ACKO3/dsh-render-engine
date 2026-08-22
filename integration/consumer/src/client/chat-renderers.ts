@@ -7,6 +7,8 @@ import type {} from '@ch4acko3/dsh-code-render/client'
 import type {} from '@ch4acko3/dsh-diff-engine/client'
 import type {} from '@ch4acko3/dsh-diff-render/client'
 import type {} from '@ch4acko3/dsh-markdown-render/client'
+import type { StructuredRenderRequest } from '@ch4acko3/dsh-structured-render/client'
+import type { TableRenderRequest } from '@ch4acko3/dsh-table-render/client'
 import { createElement, useEffect, useState } from 'react'
 
 type CommandProps = PropsRuntime<'conversation.chat.commandview'>
@@ -15,13 +17,23 @@ type CodeProps = CommandProps & Pick<ClientContext, 'codeRenderer'>
 type CodeFrameProps = CommandProps & Pick<ClientContext, 'codeFrameRenderer'>
 type AnsiProps = CommandProps & Pick<ClientContext, 'ansiRenderer'>
 type MarkdownProps = CommandProps & Pick<ClientContext, 'markdownRenderer'>
+type StructuredProps = CommandProps & Pick<ClientContext, 'structuredRenderer'>
+type TableProps = CommandProps & Pick<ClientContext, 'tableRenderer'>
 type CommandOutcome = CommandProps['node']['outcome']
 type MarkdownRenderState =
   | { kind: 'loading' }
   | { kind: 'ready', html: string }
   | { kind: 'error', error: unknown }
 
-const CHAT_RENDERER_KEYS = ['codedemo', 'framedemo', 'ansidemo', 'renderdemo', 'markdowndemo'] as const
+const CHAT_RENDERER_KEYS = [
+  'codedemo',
+  'framedemo',
+  'ansidemo',
+  'renderdemo',
+  'markdowndemo',
+  'structureddemo',
+  'tabledemo',
+] as const
 
 export type CommandOutput =
   | { kind: 'running' | 'error' | 'empty', text: string }
@@ -167,6 +179,35 @@ function RenderMarkdownCard({ node, markdownRenderer }: MarkdownProps) {
   })
 }
 
+function RenderStructuredCard({ node, structuredRenderer }: StructuredProps) {
+  const output = resolveCommandOutput('/structureddemo', node.outcome)
+  if (output.kind !== 'ready') return renderCommandState(output)
+  try {
+    const request = JSON.parse(output.text) as StructuredRenderRequest
+    const rendered = structuredRenderer.render(request)
+    return renderCard(
+      '/structureddemo',
+      'structured data',
+      'Expandable structured data rendered by DSH Render Engine',
+      rendered.html,
+    )
+  } catch (error) {
+    return renderFailure('/structureddemo', error)
+  }
+}
+
+function RenderTableCard({ node, tableRenderer }: TableProps) {
+  const output = resolveCommandOutput('/tabledemo', node.outcome)
+  if (output.kind !== 'ready') return renderCommandState(output)
+  try {
+    const request = JSON.parse(output.text) as TableRenderRequest
+    const rendered = tableRenderer.render(request)
+    return renderCard('/tabledemo', 'table', 'Semantic table rendered by DSH Render Engine', rendered.html)
+  } catch (error) {
+    return renderFailure('/tabledemo', error)
+  }
+}
+
 export function installChatRenderers(ctx: ClientContext): void {
   ctx.slots.inject('conversation.chat.commandview', () => ctx.slots.register({
     name: 'conversation.chat.commandview',
@@ -196,6 +237,16 @@ export function installChatRenderers(ctx: ClientContext): void {
     key: 'markdowndemo',
     inject: () => ({ markdownRenderer: ctx.markdownRenderer }),
   }, RenderMarkdownCard))
+  ctx.slots.inject('conversation.chat.commandview', () => ctx.slots.register({
+    name: 'conversation.chat.commandview',
+    key: 'structureddemo',
+    inject: () => ({ structuredRenderer: ctx.structuredRenderer }),
+  }, RenderStructuredCard))
+  ctx.slots.inject('conversation.chat.commandview', () => ctx.slots.register({
+    name: 'conversation.chat.commandview',
+    key: 'tabledemo',
+    inject: () => ({ tableRenderer: ctx.tableRenderer }),
+  }, RenderTableCard))
 }
 
 export function installedChatRendererCount(ctx: ClientContext): number {

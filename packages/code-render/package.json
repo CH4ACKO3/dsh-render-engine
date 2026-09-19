@@ -52,15 +52,13 @@
     "client": {
       "immediately": true,
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
         "@ch4acko3/dsh-syntax-highlight"
       ],
       "platform": "web"
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.8"
+    "@deepseek-ai/cordis": "^4.0.1"
   },
   "dependencies": {
     "@ch4acko3/dsh-syntax-highlight": "workspace:^"

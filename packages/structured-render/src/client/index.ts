@@ -1,4 +1,4 @@
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { StructuredRendererService } from './contract.js'
 import { HtmlStructuredRenderer } from './service.js'
 

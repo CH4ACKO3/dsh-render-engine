@@ -8,7 +8,8 @@
     "build": "pnpm -r --workspace-concurrency=1 run build",
     "typecheck": "pnpm -r --workspace-concurrency=1 run typecheck",
     "test": "pnpm -r --workspace-concurrency=1 run test",
-    "check": "pnpm run build && pnpm run typecheck && pnpm run test"
+    "check": "pnpm run build && pnpm run typecheck && pnpm run test && pnpm run test:client-bundles",
+    "test:client-bundles": "node scripts/test-client-bundles.mjs"
   },
   "engines": {
     "node": "^22.22.3 || >=24.11.1"

@@ -272,3 +272,7 @@ GitHub Actions 中的 `Publish packages` 工作流会使用 npm Trusted Publishi
 ## 许可证
 
 [MIT](./LICENSE)
+
+## Compatibility / 兼容性
+
+12 个发布包改为直接使用 Cordis，不再注入旧 dsh-client-runtime。构建、类型检查、53 项测试与浏览器 bundle 服务/渲染检查通过；bundle 检查同时使用 DSH 0.1.5-rc.2 和 0.1.6-alpha.2 的 Cordis 验证。构建后运行 `node scripts/test-client-bundles.mjs <隔离的DSH安装目录>` 可复测。私有 ChatView 示例仍针对原来的 DSH API，此检查不代表真实浏览器交互已经验证。

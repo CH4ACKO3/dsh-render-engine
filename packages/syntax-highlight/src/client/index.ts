@@ -1,4 +1,4 @@
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@ch4acko3/dsh-shiki/client'
 import type { SyntaxHighlighterService } from './contract.js'
 import { SyntaxHighlighter } from './service.js'

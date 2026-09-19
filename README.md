@@ -272,3 +272,7 @@ Each Tag publishes only its named package, so the twelve packages may use differ
 ## License
 
 [MIT](./LICENSE)
+
+## Compatibility / 兼容性
+
+The 12 published renderer packages depend on Cordis directly and no longer inject the legacy dsh-client-runtime package. Build, type checks, 53 tests, and browser-bundle service/render checks passed; the latter were also run against Cordis from DSH 0.1.5-rc.2 and 0.1.6-alpha.2. Run `node scripts/test-client-bundles.mjs <isolated-dsh-root>` after building to repeat the bundle check. The private ChatView consumer still targets its original DSH API. This does not verify interaction in a live DSH browser.

@@ -1,4 +1,4 @@
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import DOMPurify from 'dompurify'
 import mermaid from 'mermaid'
 import type { MermaidRendererService } from './contract.js'

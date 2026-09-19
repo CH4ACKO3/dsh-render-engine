@@ -51,15 +51,12 @@
     },
     "client": {
       "immediately": true,
-      "inject": [
-        "@deepseek-ai/dsh-client-runtime"
-      ],
+      "inject": [],
       "platform": "web"
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.8"
+    "@deepseek-ai/cordis": "^4.0.1"
   },
   "dependencies": {
     "diff": "^9.0.0"

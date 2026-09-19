@@ -1,6 +1,6 @@
 {
   "name": "@ch4acko3/dsh-mermaid-render",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Safe Mermaid diagram rendering service for DeepSeek Harness Web plugins",
   "type": "module",
   "main": "./lib/index.js",

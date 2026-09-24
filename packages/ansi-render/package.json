@@ -1,6 +1,6 @@
 {
   "name": "@ch4acko3/dsh-ansi-render",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Safe ANSI terminal output rendering service for DeepSeek Harness Web plugins",
   "type": "module",
   "main": "./lib/index.js",

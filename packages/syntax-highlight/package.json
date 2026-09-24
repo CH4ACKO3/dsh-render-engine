@@ -72,7 +72,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/CH4ACKO3/dsh-render-engine.git",
+    "url": "https://github.com/memorax-ai/dsh-render-engine.git",
     "directory": "packages/syntax-highlight"
   },
   "license": "MIT",
